@@ -4,7 +4,7 @@
 
 ---
 
-## Philosophy
+## Features
 
 - **Performance by Design:**  
   All result types are implemented as readonly structs, ensuring zero heap allocations and minimal GC pressure. This makes ForgeSharp.Results ideal for high-throughput and low-latency applications.
@@ -28,6 +28,92 @@
   Results are passed by value, ensuring predictable and thread-safe behavior.
 - **Immutability:**  
   All result types are readonly, preventing accidental mutation.
+
+---
+
+## Extension Methods
+
+ForgeSharp.Results provides a rich set of extension methods to make working with results functional, expressive, and safe in both synchronous and asynchronous scenarios.
+
+### Chaining and Functional Composition
+
+- **Then / ThenAsync**  
+  Chain operations that return results, propagating failures automatically.  
+  _Example:_  
+  `result.Then(x => DoSomething(x))`  
+  `await result.ThenAsync(x => DoSomethingAsync(x))`
+
+### Value Extraction and Conversion
+
+- **GetOrDefault / GetOrDefaultAsync**  
+  Get the value if successful, or a default value if not.  
+  _Example:_  
+  `result.GetOrDefault(-1)`  
+  `await resultTask.GetOrDefaultAsync(-1)`
+
+- **GetOrThrow / GetOrThrowAsync**  
+  Get the value if successful, or throw an exception if not.  
+  _Example:_  
+  `result.GetOrThrow()`  
+  `await resultTask.GetOrThrowAsync()`
+
+- **AsResult / AsResultAsync**  
+  Convert a `Result<T>` to a non-generic `Result`.  
+  _Example:_  
+  `result.AsResult()`  
+  `await resultTask.AsResultAsync()`
+
+### Null Safety
+
+- **EnsureNotNull / EnsureNotNullAsync**  
+  Ensure the value of a successful result is not null, otherwise return a failed result.  
+  _Example:_  
+  `result.EnsureNotNull()`  
+  `await resultTask.EnsureNotNullAsync()`
+
+### Tapping (Side Effects)
+
+- **Tap / TapAsync**  
+  Execute an action if the result is successful, without altering the result.  
+  _Example:_  
+  `result.Tap(() => Log("Success"))`  
+  `await result.TapAsync(async () => await LogAsync())`
+
+### Flattening
+
+- **Flatten / FlattenAsync**  
+  Flatten nested results or a sequence of results into a single result, propagating the first failure.  
+  _Example:_  
+  `result.Flatten()`  
+  `await resultTask.FlattenAsync()`
+
+### Mapping
+
+- **Map / MapAsync**  
+  Map the values of a successful result sequence to a new type.  
+  _Example:_  
+  `result.Map(x => x.ToString())`  
+  `await resultTask.MapAsync(x => x.ToString())`
+
+### Resolving Collections
+
+- **ResolveAsync**  
+  Asynchronously resolve a collection of result tasks into a collection or async enumerable of results.  
+  _Example:_  
+  `await tasks.ResolveAsync()`
+
+### Miscellaneous
+
+- **Restore / RestoreAsync**  
+  Restore a failed result using a provided function, useful for fallback or recovery logic.  
+  _Example:_  
+  `result.Restore(fallbackFunc)`  
+  `await resultTask.RestoreAsync(fallbackFunc)`
+
+- **IsSuccessAsync**  
+  Determine whether an awaited result is successful.  
+  _Example:_  
+  `await resultTask.IsSuccessAsync()`
 
 ---
 
@@ -65,10 +151,28 @@ var result = await GetUserAsync()
 
 ### Basic Usage
 
+Results can be used to represent success or failure in operations, with optional messages and exceptions.
+
 ```csharp
+Result DoSomething()
+{
+    // Perform some operation
+    return Result.Success();
+}
+
 Result result = DoSomething();
 if (!result.IsSuccess)
     Console.WriteLine(result.Message);
+```
+
+Results can also carry values, allowing you to return data alongside success or failure states.
+
+```csharp
+Result<int> GetValue()
+{
+    // Perform some operation that returns an int
+    return Result.Success(42);
+}
 
 Result<int> valueResult = GetValue();
 int value = valueResult.IsSuccess ? valueResult.Value : -1;
@@ -79,11 +183,7 @@ int value = valueResult.IsSuccess ? valueResult.Value : -1;
 ```csharp
 Result result = Result.Capture(() => MightThrow());
 Result<int> valueResult = Result.Capture(() => MightThrowAndReturnInt());
-```
 
-### Async Support
-
-```csharp
 Result result = await Result.CaptureAsync(async () => await MightThrowAsync());
 Result<int> valueResult = await Result.CaptureAsync(async () => await MightThrowAndReturnIntAsync());
 ```
@@ -105,8 +205,8 @@ Result<int> valueResult = await Result.CaptureAsync(async () => await MightThrow
 
 ## Project Structure
 
-- `Result.cs` – Core result types and logic.
-- `Monad/` – Extension methods for chaining, mapping, flattening, and more.
+- `Result.cs` - Core result types and logic.
+- `Monad/` - Extension methods for chaining, mapping, flattening, and more.
 
 ---
 
