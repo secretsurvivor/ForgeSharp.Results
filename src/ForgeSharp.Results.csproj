@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;netstandard2.0;netstandard2.1</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>ForgeSharp.Results</RootNamespace>
+
+    <IsPackable>true</IsPackable>
+    <ProductName>ForgeSharp.Results</ProductName>
+    <PackageId>ForgeSharp.Results</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Connor McBrayne</Authors>
+    <Company>secretsurvivor</Company>
+    <Description>Monadic Result type for safe and fluent error handling.</Description>
+    <RepositoryUrl>https://github.com/secretsurvivor/ForgeSharp.Results</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/secretsurvivor/ForgeSharp.Results</PackageProjectUrl>
+    <PackageTags>result;result-monad;monad;error-handling;functional;functional-programming;async;pipeline;safe</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\README.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
+
+</Project>
