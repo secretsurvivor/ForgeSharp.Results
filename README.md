@@ -196,7 +196,7 @@ Result<int> valueResult = await Result.CaptureAsync(async () => await MightThrow
   Core result types representing success, validation faults, and exceptions.
 - **IResult / IResult<T>:**  
   Interfaces for result types.
-- **Extension Methods:**  
+- **Functional Extension Methods:**  
   For mapping, chaining, error handling, and async workflows.
 - **Forwarding and Conversion:**  
   Easily convert between generic and non-generic results.
@@ -235,4 +235,4 @@ Contributions are welcome! Please open issues or submit pull requests for bug fi
 
 ---
 
-**ForgeSharp.Results** – Fast, type-safe, and allocation-free result handling for .NET.
+**ForgeSharp.Results** - Fast, type-safe, and allocation-free result handling for .NET.
