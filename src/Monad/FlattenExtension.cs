@@ -31,7 +31,7 @@ public static class FlattenExtension
     [DebuggerStepperBoundary]
     public static async Task<Result<T>> FlattenAsync<T>(this Task<Result<Result<T>>> resultTask)
     {
-        var result = await resultTask;
+        var result = await resultTask.ConfigureAwait(false);
 
         if (result.IsSuccess)
         {
@@ -49,7 +49,7 @@ public static class FlattenExtension
     [DebuggerStepperBoundary]
     public static async Task<Result> FlattenAsync(this Task<Result<Result>> resultTask)
     {
-        var result = await resultTask;
+        var result = await resultTask.ConfigureAwait(false);
 
         if (result.IsSuccess)
         {
@@ -84,7 +84,7 @@ public static class FlattenExtension
     [DebuggerStepperBoundary]
     public static async Task<Result> FlattenAsync<T>(this Task<IEnumerable<Result>> resultTask)
     {
-        var results = await resultTask;
+        var results = await resultTask.ConfigureAwait(false);
 
         if (results.Any(x => !x.IsSuccess))
         {
@@ -105,7 +105,7 @@ public static class FlattenExtension
     [DebuggerStepperBoundary]
     public static async ValueTask<Result<T>> FlattenAsync<T>(this ValueTask<Result<Result<T>>> resultTask)
     {
-        var result = await resultTask;
+        var result = await resultTask.ConfigureAwait(false);
 
         if (result.IsSuccess)
         {
@@ -123,7 +123,7 @@ public static class FlattenExtension
     [DebuggerStepperBoundary]
     public static async ValueTask<Result> FlattenAsync(this ValueTask<Result<Result>> resultTask)
     {
-        var result = await resultTask;
+        var result = await resultTask.ConfigureAwait(false);
 
         if (result.IsSuccess)
         {
@@ -142,11 +142,30 @@ public static class FlattenExtension
     [DebuggerStepperBoundary]
     public static async ValueTask<Result> FlattenAsync<T>(this ValueTask<IEnumerable<Result>> resultTask)
     {
-        var results = await resultTask;
+        var results = await resultTask.ConfigureAwait(false);
 
         if (results.Any(x => !x.IsSuccess))
         {
             return results.First(x => !x.IsSuccess);
+        }
+
+        return Result.Ok();
+    }
+
+    /// <summary>
+    /// Asynchronously flattens a sequence of <see cref="Result"/> objects from an <see cref="IAsyncEnumerable{Result}"/>, returning the first failed result or a successful result if all are successful.
+    /// </summary>
+    /// <param name="results">The asynchronous sequence of results.</param>
+    /// <returns>A task representing the asynchronous operation, with the first failed result or a successful result if all are successful.</returns>
+    [DebuggerStepperBoundary]
+    public static async Task<Result> FlattenAsync(this IAsyncEnumerable<Result> results)
+    {
+        await foreach (var result in results.ConfigureAwait(false))
+        {
+            if (!result.IsSuccess)
+            {
+                return result;
+            }
         }
 
         return Result.Ok();

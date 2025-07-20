@@ -34,7 +34,7 @@ public static class MapExtension
     [DebuggerStepperBoundary]
     public static async Task<Result<IEnumerable<TResult>>> MapAsync<T, TResult>(this Task<Result<IEnumerable<T>>> resultTask, Func<T, TResult> func)
     {
-        var result = await resultTask;
+        var result = await resultTask.ConfigureAwait(false);
 
         if (result.IsSuccess)
         {
@@ -57,7 +57,7 @@ public static class MapExtension
     [DebuggerStepperBoundary]
     public static async ValueTask<Result<IEnumerable<TResult>>> MapAsync<T, TResult>(this ValueTask<Result<IEnumerable<T>>> resultTask, Func<T, TResult> func)
     {
-        var result = await resultTask;
+        var result = await resultTask.ConfigureAwait(false);
 
         if (result.IsSuccess)
         {

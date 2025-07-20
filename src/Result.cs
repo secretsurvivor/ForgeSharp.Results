@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Serialization;
 
 namespace ForgeSharp.Results;
 
@@ -45,8 +46,8 @@ public interface IResult<out T> : IResult
 /// <summary>
 /// Represents a non-generic result of an operation.
 /// </summary>
-[StructLayout(LayoutKind.Sequential)]
-public readonly struct Result : IResult
+[StructLayout(LayoutKind.Sequential), Serializable]
+public readonly struct Result : IResult, ISerializable
 {
     /// <inheritdoc/>
     public bool IsSuccess { [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
@@ -271,6 +272,26 @@ public readonly struct Result : IResult
     }
 
     /// <summary>
+    /// Populates a <see cref="SerializationInfo"/> with the data needed to serialize the <see cref="Result"/>.
+    /// </summary>
+    /// <param name="info">The <see cref="SerializationInfo"/> to populate with data.</param>
+    /// <param name="context">The destination (see <see cref="StreamingContext"/>) for this serialization.</param>
+    public void GetObjectData(SerializationInfo info, StreamingContext context)
+    {
+        info.AddValue(nameof(IsSuccess), IsSuccess);
+        info.AddValue(nameof(Status), Status);
+
+        if (Status == State.ValidationFault)
+        {
+            info.AddValue(nameof(Message), Message);
+        }
+        else if (Status == State.Exception)
+        {
+            info.AddValue(nameof(Exception), Exception, typeof(Exception));
+        }
+    }
+
+    /// <summary>
     /// Represents the state of a <see cref="Result"/>.
     /// </summary>
     public enum State
@@ -296,8 +317,8 @@ public readonly struct Result : IResult
 /// Represents a result of an operation with a value.
 /// </summary>
 /// <typeparam name="T">The type of the value.</typeparam>
-[StructLayout(LayoutKind.Sequential)]
-public readonly struct Result<T> : IResult<T>
+[StructLayout(LayoutKind.Sequential), Serializable]
+public readonly struct Result<T> : IResult<T>, ISerializable
 {
     /// <inheritdoc/>
     public bool IsSuccess { [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
@@ -403,9 +424,10 @@ public readonly struct Result<T> : IResult<T>
     public static Result<T> ForwardFail(IResult result) => new Result<T>(result);
 
     /// <summary>
-    /// Converts a <see cref="Result{T}"/> to a non-generic <see cref="Result"/>.
+    /// Explicitly converts a <see cref="Result{T}"/> to a non-generic <see cref="Result"/>.
     /// </summary>
-    /// <param name="result">The result to convert.</param>
+    /// <param name="result">The generic result to convert.</param>
+    /// <returns>A non-generic <see cref="Result"/> representing the same state as the input.</returns>
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static explicit operator Result(Result<T> result) => Result.ForwardFail(result);
 
@@ -422,5 +444,29 @@ public readonly struct Result<T> : IResult<T>
             Result.State.Exception => $"Exception: {Exception.GetType().Name} - {Exception.Message}",
             _ => throw new NotImplementedException(),
         };
+    }
+
+    /// <summary>
+    /// Populates a <see cref="SerializationInfo"/> with the data needed to serialize the <see cref="Result{T}"/>.
+    /// </summary>
+    /// <param name="info">The <see cref="SerializationInfo"/> to populate with data.</param>
+    /// <param name="context">The destination (see <see cref="StreamingContext"/>) for this serialization.</param>
+    public void GetObjectData(SerializationInfo info, StreamingContext context)
+    {
+        info.AddValue(nameof(IsSuccess), IsSuccess);
+        info.AddValue(nameof(Status), Status);
+
+        if (Status == Result.State.ValidationFault)
+        {
+            info.AddValue(nameof(Message), Message);
+        }
+        else if (Status == Result.State.Exception)
+        {
+            info.AddValue(nameof(Exception), Exception, typeof(Exception));
+        }
+        else if (IsSuccess)
+        {
+            info.AddValue(nameof(Value), Value, typeof(T));
+        }
     }
 }

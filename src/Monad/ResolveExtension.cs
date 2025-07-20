@@ -16,7 +16,7 @@ public static class ResolveExtension
     {
         foreach (var task in resultTasks)
         {
-            yield return await task;
+            yield return await task.ConfigureAwait(false);
         }
     }
 
@@ -30,7 +30,7 @@ public static class ResolveExtension
     {
         foreach (var task in resultTasks)
         {
-            yield return await task;
+            yield return await task.ConfigureAwait(false);
         }
     }
 
@@ -45,7 +45,7 @@ public static class ResolveExtension
     {
         foreach (var task in resultTasks)
         {
-            yield return await task;
+            yield return await task.ConfigureAwait(false);
         }
     }
 
@@ -60,7 +60,7 @@ public static class ResolveExtension
     {
         foreach (var task in resultTasks)
         {
-            yield return await task;
+            yield return await task.ConfigureAwait(false);
         }
     }
 
@@ -78,7 +78,7 @@ public static class ResolveExtension
 
         foreach (var result in resultTasks)
         {
-            results.Add(await result);
+            results.Add(await result.ConfigureAwait(false));
         }
 
         return results;
@@ -97,7 +97,7 @@ public static class ResolveExtension
 
         foreach (var result in resultTasks)
         {
-            results.Add(await result);
+            results.Add(await result.ConfigureAwait(false));
         }
 
         return results;

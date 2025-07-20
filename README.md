@@ -18,17 +18,30 @@
 - **Modern C# Best Practices:**  
   Leverages the latest C# features and .NET standards for maximum compatibility and future-proofing.
 
+- **Composable Pipelines:**  
+  Build synchronous and asynchronous pipelines for result-based workflows, with full LINQ support for expressive, query-based composition.
+
 ---
 
-## Why Structs?
+## Pipelines & LINQ Integration
 
-- **No Hidden Allocations:**  
-  Using structs avoids heap allocations, making results lightweight and fast.
-- **Value Semantics:**  
-  Results are passed by value, ensuring predictable and thread-safe behavior.
-- **Immutability:**  
-  All result types are readonly, preventing accidental mutation.
+ForgeSharp.Results introduces **Pipelines** for composing complex workflows in a functional, type-safe, and allocation-free manner. Pipelines can be synchronous (`IPipeline<T>`) or asynchronous (`IAsyncPipeline<T>`), and can be created from delegates or composed from other pipelines.
 
+- **LINQ Support:** Pipelines can be composed using LINQ query expressions, enabling powerful, readable, and maintainable workflows. LINQ methods like `select`, `where`, and `from` are supported for both sync and async pipelines.
+- **Combining Results:** Pipelines are ideal for combining multiple result-producing operations, propagating errors automatically, and building robust data flows.
+
+_Example:
+```csharp
+var pipeline =
+    from user in GetUserPipeline()
+    where user.IsActive
+    from profile in GetProfilePipeline(user.Id)
+    select (user, profile);
+
+var result = pipeline.Execute();
+if (result.IsSuccess)
+    Console.WriteLine($"User: {result.Value.user}, Profile: {result.Value.profile}");
+```
 ---
 
 ## Extension Methods
@@ -102,6 +115,18 @@ ForgeSharp.Results provides a rich set of extension methods to make working with
   _Example:_  
   `await tasks.ResolveAsync()`
 
+### Dictionary and Collection Helpers
+
+- **TryGetValueResult**  
+  Attempts to get a value from a dictionary as a `Result<T>`.  
+  _Example:_  
+  `var valueResult = dict.TryGetValueResult(key);`
+
+- **FirstOrResult**  
+  Returns the first element in a sequence that matches a predicate as a `Result<T>`.  
+  _Example:_  
+  `var firstResult = list.FirstOrResult(x => x.IsActive, "No active item found.");`
+
 ### Miscellaneous
 
 - **Restore / RestoreAsync**  
@@ -145,6 +170,17 @@ var result = await GetUserAsync()
       .ThenAsync(user => ValidateAsync(user));
 ```
 
+- **LINQ Pipelines:**  
+  Use LINQ query expressions to compose pipelines and combine results.
+```csharp
+var pipeline =
+    from user in GetUserPipeline()
+    where user.IsActive
+    from profile in GetProfilePipeline(user.Id)
+    select (user, profile);
+
+var result = pipeline.Execute();
+```
 ---
 
 ## Quick Start
@@ -196,8 +232,12 @@ Result<int> valueResult = await Result.CaptureAsync(async () => await MightThrow
   Core result types representing success, validation faults, and exceptions.
 - **IResult / IResult<T>:**  
   Interfaces for result types.
+- **Pipelines:**  
+  Synchronous and asynchronous pipelines for composing result-based workflows, with LINQ support.
 - **Functional Extension Methods:**  
   For mapping, chaining, error handling, and async workflows.
+- **Dictionary and Collection Helpers:**  
+  Methods like `TryGetValueResult` and `FirstOrResult` for safer collection access.
 - **Forwarding and Conversion:**  
   Easily convert between generic and non-generic results.
 
@@ -206,6 +246,7 @@ Result<int> valueResult = await Result.CaptureAsync(async () => await MightThrow
 ## Project Structure
 
 - `Result.cs` - Core result types and logic.
+- `Pipeline.cs` - Pipeline interfaces and implementations.
 - `Monad/` - Extension methods for chaining, mapping, flattening, and more.
 
 ---

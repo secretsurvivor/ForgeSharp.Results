@@ -53,7 +53,7 @@ public static class ThenExtension
     {
         if (result.IsSuccess)
         {
-            return Result.Ok(await func());
+            return Result.Ok(await func().ConfigureAwait(false));
         }
 
         return Result.ForwardFail<TResult>(result);
@@ -72,7 +72,7 @@ public static class ThenExtension
     {
         if (result.IsSuccess)
         {
-            return Result.Ok(await func(result.Value));
+            return Result.Ok(await func(result.Value).ConfigureAwait(false));
         }
 
         return Result.ForwardFail<TResult>(result);
@@ -88,7 +88,7 @@ public static class ThenExtension
     [DebuggerStepperBoundary]
     public static async Task<Result<TResult>> ThenAsync<TResult>(this Task<Result> resultTask, Func<TResult> func)
     {
-        var result = await resultTask;
+        var result = await resultTask.ConfigureAwait(false);
 
         if (result.IsSuccess)
         {
@@ -109,7 +109,7 @@ public static class ThenExtension
     [DebuggerStepperBoundary]
     public static async Task<Result<TResult>> ThenAsync<T, TResult>(this Task<Result<T>> resultTask, Func<T, TResult> func)
     {
-        var result = await resultTask;
+        var result = await resultTask.ConfigureAwait(false);
 
         if (result.IsSuccess)
         {
@@ -129,7 +129,7 @@ public static class ThenExtension
     [DebuggerStepperBoundary]
     public static async Task<Result<TResult>> ThenAsync<TResult>(this Task<Result> resultTask, Func<Task<TResult>> func)
     {
-        var result = await resultTask;
+        var result = await resultTask.ConfigureAwait(false);
 
         if (result.IsSuccess)
         {
@@ -150,11 +150,11 @@ public static class ThenExtension
     [DebuggerStepperBoundary]
     public static async Task<Result<TResult>> ThenAsync<T, TResult>(this Task<Result<T>> resultTask, Func<T, Task<TResult>> func)
     {
-        var result = await resultTask;
+        var result = await resultTask.ConfigureAwait(false);
 
         if (result.IsSuccess)
         {
-            return Result.Ok(await func(result.Value));
+            return Result.Ok(await func(result.Value).ConfigureAwait(false));
         }
 
         return Result.ForwardFail<TResult>(result);
@@ -173,11 +173,11 @@ public static class ThenExtension
     [DebuggerStepperBoundary]
     public static async Task<Result<TResult>> ThenAsync<T, TResult>(this ValueTask<Result<T>> resultTask, Func<T, Task<TResult>> func)
     {
-        var result = await resultTask;
+        var result = await resultTask.ConfigureAwait(false);
 
         if (result.IsSuccess)
         {
-            return Result.Ok(await func(result.Value));
+            return Result.Ok(await func(result.Value).ConfigureAwait(false));
         }
 
         return Result.ForwardFail<TResult>(result);
@@ -195,7 +195,7 @@ public static class ThenExtension
     {
         if (result.IsSuccess)
         {
-            return Result.Ok(await func());
+            return Result.Ok(await func().ConfigureAwait(false));
         }
 
         return Result.ForwardFail<TResult>(result);
@@ -214,7 +214,7 @@ public static class ThenExtension
     {
         if (result.IsSuccess)
         {
-            return Result.Ok(await func(result.Value));
+            return Result.Ok(await func(result.Value).ConfigureAwait(false));
         }
 
         return Result.ForwardFail<TResult>(result);
@@ -230,7 +230,7 @@ public static class ThenExtension
     [DebuggerStepperBoundary]
     public static async ValueTask<Result<TResult>> ThenAsync<TResult>(this ValueTask<Result> resultTask, Func<TResult> func)
     {
-        var result = await resultTask;
+        var result = await resultTask.ConfigureAwait(false);
 
         if (result.IsSuccess)
         {
@@ -251,7 +251,7 @@ public static class ThenExtension
     [DebuggerStepperBoundary]
     public static async ValueTask<Result<TResult>> ThenAsync<T, TResult>(this ValueTask<Result<T>> resultTask, Func<T, TResult> func)
     {
-        var result = await resultTask;
+        var result = await resultTask.ConfigureAwait(false);
 
         if (result.IsSuccess)
         {
@@ -271,11 +271,11 @@ public static class ThenExtension
     [DebuggerStepperBoundary]
     public static async ValueTask<Result<TResult>> ThenAsync<TResult>(this ValueTask<Result> resultTask, Func<ValueTask<TResult>> func)
     {
-        var result = await resultTask;
+        var result = await resultTask.ConfigureAwait(false);
 
         if (result.IsSuccess)
         {
-            return Result.Ok(await func());
+            return Result.Ok(await func().ConfigureAwait(false));
         }
 
         return Result.ForwardFail<TResult>(result);
@@ -292,11 +292,11 @@ public static class ThenExtension
     [DebuggerStepperBoundary]
     public static async ValueTask<Result<TResult>> ThenAsync<T, TResult>(this ValueTask<Result<T>> resultTask, Func<T, ValueTask<TResult>> func)
     {
-        var result = await resultTask;
+        var result = await resultTask.ConfigureAwait(false);
 
         if (result.IsSuccess)
         {
-            return Result.Ok(await func(result.Value));
+            return Result.Ok(await func(result.Value).ConfigureAwait(false));
         }
 
         return Result.ForwardFail<TResult>(result);
@@ -312,11 +312,11 @@ public static class ThenExtension
     [DebuggerStepperBoundary]
     public static async Task<Result<TResult>> ThenAsync<TResult>(this ValueTask<Result> resultTask, Func<Task<TResult>> func)
     {
-        var result = await resultTask;
+        var result = await resultTask.ConfigureAwait(false);
 
         if (result.IsSuccess)
         {
-            return Result.Ok(await func());
+            return Result.Ok(await func().ConfigureAwait(false));
         }
 
         return Result.ForwardFail<TResult>(result);

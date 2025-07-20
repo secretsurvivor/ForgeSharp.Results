@@ -10,7 +10,7 @@
     <IsPackable>true</IsPackable>
     <ProductName>ForgeSharp.Results</ProductName>
     <PackageId>ForgeSharp.Results</PackageId>
-    <Version>1.0.0</Version>
+    <Version>1.1.0</Version>
     <Authors>Connor McBrayne</Authors>
     <Company>secretsurvivor</Company>
     <Description>Monadic Result type for safe and fluent error handling.</Description>
@@ -18,7 +18,7 @@
     <RepositoryType>git</RepositoryType>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/secretsurvivor/ForgeSharp.Results</PackageProjectUrl>
-    <PackageTags>result;result-monad;monad;error-handling;functional;functional-programming;async;pipeline;safe</PackageTags>
+    <PackageTags>result;result-monad;monad;error-handling;functional;functional-programming;async;pipeline;safe;forgesharp</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 

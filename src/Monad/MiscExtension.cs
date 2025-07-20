@@ -37,7 +37,7 @@ public static class MiscExtension
     [DebuggerStepperBoundary]
     public static async Task<T> GetOrDefaultAsync<T>(this Task<Result<T>> resultTask, T defaultValue = default!)
     {
-        var result = await resultTask;
+        var result = await resultTask.ConfigureAwait(false);
 
         if (result.IsSuccess)
         {
@@ -80,7 +80,7 @@ public static class MiscExtension
     [DebuggerStepperBoundary]
     public static async Task<T> GetOrThrowAsync<T>(this Task<Result<T>> resultTask)
     {
-        var result = await resultTask;
+        var result = await resultTask.ConfigureAwait(false);
 
         if (result.IsSuccess)
         {
@@ -103,7 +103,7 @@ public static class MiscExtension
     [DebuggerStepperBoundary]
     public static async Task<bool> IsSuccessAsync(this Task<Result> resultTask)
     {
-        return (await resultTask).IsSuccess;
+        return (await resultTask.ConfigureAwait(false)).IsSuccess;
     }
 
     /// <summary>
@@ -115,7 +115,7 @@ public static class MiscExtension
     [DebuggerStepperBoundary]
     public static async Task<bool> IsSuccessAsync<T>(this Task<Result<T>> resultTask)
     {
-        return (await resultTask).IsSuccess;
+        return (await resultTask.ConfigureAwait(false)).IsSuccess;
     }
 
     /// <summary>
@@ -149,7 +149,7 @@ public static class MiscExtension
     [DebuggerStepperBoundary]
     public static async Task<Result<T>> EnsureNotNullAsync<T>(this Task<Result<T?>> resultTask)
     {
-        var result = await resultTask;
+        var result = await resultTask.ConfigureAwait(false);
 
         if (result.IsSuccess)
         {
@@ -185,7 +185,7 @@ public static class MiscExtension
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static async Task<Result> AsResultAsync<T>(this Task<Result<T>> resultTask)
     {
-        return (Result)await resultTask;
+        return (Result)await resultTask.ConfigureAwait(false);
     }
 
     /// <summary>
@@ -216,7 +216,7 @@ public static class MiscExtension
     [DebuggerStepperBoundary]
     public static async Task<Result<T>> RestoreAsync<T>(this Task<Result<T>> resultTask, Func<IResult, Result<T>> restoreFunc)
     {
-        var result = await resultTask;
+        var result = await resultTask.ConfigureAwait(false);
 
         if (result.IsSuccess)
         {
@@ -236,14 +236,14 @@ public static class MiscExtension
     [DebuggerStepperBoundary]
     public static async Task<Result<T>> RestoreAsync<T>(this Task<Result<T>> resultTask, Func<IResult, Task<Result<T>>> restoreFunc)
     {
-        var result = await resultTask;
+        var result = await resultTask.ConfigureAwait(false);
 
         if (result.IsSuccess)
         {
             return result;
         }
 
-        return await restoreFunc(result);
+        return await restoreFunc(result).ConfigureAwait(false);
     }
 
 #if NETSTANDARD2_1_OR_GREATER || NET6_0_OR_GREATER
@@ -258,7 +258,7 @@ public static class MiscExtension
     [DebuggerStepperBoundary]
     public static async ValueTask<T> GetOrDefaultAsync<T>(this ValueTask<Result<T>> resultTask, T defaultValue = default!)
     {
-        var result = await resultTask;
+        var result = await resultTask.ConfigureAwait(false);
 
         if (result.IsSuccess)
         {
@@ -278,7 +278,7 @@ public static class MiscExtension
     [DebuggerStepperBoundary]
     public static async ValueTask<T> GetOrThrowAsync<T>(this ValueTask<Result<T>> resultTask)
     {
-        var result = await resultTask;
+        var result = await resultTask.ConfigureAwait(false);
 
         if (result.IsSuccess)
         {
@@ -301,7 +301,7 @@ public static class MiscExtension
     [DebuggerStepperBoundary]
     public static async ValueTask<bool> IsSuccessAsync(this ValueTask<Result> resultTask)
     {
-        return (await resultTask).IsSuccess;
+        return (await resultTask.ConfigureAwait(false)).IsSuccess;
     }
 
     /// <summary>
@@ -313,7 +313,7 @@ public static class MiscExtension
     [DebuggerStepperBoundary]
     public static async ValueTask<bool> IsSuccess<T>(this ValueTask<Result<T>> resultTask)
     {
-        return (await resultTask).IsSuccess;
+        return (await resultTask.ConfigureAwait(false)).IsSuccess;
     }
 
     /// <summary>
@@ -325,7 +325,7 @@ public static class MiscExtension
     [DebuggerStepperBoundary]
     public static async ValueTask<Result<T>> EnsureNotNullAsync<T>(this ValueTask<Result<T?>> resultTask)
     {
-        var result = await resultTask;
+        var result = await resultTask.ConfigureAwait(false);
 
         if (result.IsSuccess)
         {
@@ -349,8 +349,45 @@ public static class MiscExtension
     [DebuggerStepperBoundary]
     public static async ValueTask<Result> AsResultAsync<T>(this ValueTask<Result<T>> resultTask)
     {
-        return (Result)await resultTask;
+        return (Result)await resultTask.ConfigureAwait(false);
     }
 
 #endif
+
+    /// <summary>
+    /// Attempts to get the value associated with the specified key from the dictionary and returns a <see cref="Result{T}"/>.
+    /// </summary>
+    /// <typeparam name="TKey">The type of the key.</typeparam>
+    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <param name="dict">The dictionary to search.</param>
+    /// <param name="key">The key to locate.</param>
+    /// <returns>A successful result containing the value if found; otherwise, a failed result with an error message.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), DebuggerStepperBoundary]
+    public static Result<T> TryGetValueResult<TKey, T>(this IDictionary<TKey, T> dict, TKey key)
+    {
+        return dict.TryGetValue(key, out var value) ? Result.Ok(value) : Result.Fail<T>($"Key '{key}' not found.");
+    }
+
+    /// <summary>
+    /// Returns the first element in the sequence that satisfies a specified predicate as a <see cref="Result{T}"/>.
+    /// </summary>
+    /// <typeparam name="T">The type of the elements of <paramref name="source"/>.</typeparam>
+    /// <param name="source">The sequence to search.</param>
+    /// <param name="predicate">A function to test each element for a condition.</param>
+    /// <param name="errorMessage">The error message to use if no matching element is found.</param>
+    /// <returns>A successful result containing the first matching element if found; otherwise, a failed result with the specified error message.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), DebuggerStepperBoundary]
+    public static Result<T> FirstOrResult<T>(this IEnumerable<T> source, Func<T, bool> predicate, string errorMessage = "No matching element found.")
+    {
+        var item = source.FirstOrDefault(predicate);
+
+        if (item != null)
+        {
+            return Result.Ok(item);
+        }
+        else
+        {
+            return Result.Fail<T>(errorMessage);
+        }
+    }
 }
