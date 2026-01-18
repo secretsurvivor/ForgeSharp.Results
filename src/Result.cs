@@ -228,7 +228,7 @@ public readonly struct Result : IResult, ISerializable
     {
         try
         {
-            await action();
+            await action().ConfigureAwait(false);
             return Ok();
         }
         catch (Exception e)
@@ -248,7 +248,7 @@ public readonly struct Result : IResult, ISerializable
     {
         try
         {
-            return Ok(await func());
+            return Ok(await func().ConfigureAwait(false));
         }
         catch (Exception e)
         {
