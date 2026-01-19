@@ -10,7 +10,7 @@
     <IsPackable>true</IsPackable>
     <ProductName>ForgeSharp.Results</ProductName>
     <PackageId>ForgeSharp.Results</PackageId>
-    <Version>1.2.0</Version>
+    <Version>1.2.1</Version>
     <Authors>Connor McBrayne</Authors>
     <Company>secretsurvivor</Company>
     <Description>Monadic Result type for safe and fluent error handling.</Description>
