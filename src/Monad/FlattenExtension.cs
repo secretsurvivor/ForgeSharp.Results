@@ -1,10 +1,34 @@
-﻿using System.Diagnostics;
+﻿using ForgeSharp.Results.Infrastructure;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace ForgeSharp.Results.Monad;
 
+/// <summary>
+/// Provides helpers to "flatten" nested <see cref="Result"/> and sequences of <see cref="Result"/> into
+/// a single <see cref="Result"/> or <see cref="Result{T}"/>. Useful for composing operations that may produce
+/// nested results or collections of results.
+/// </summary>
 public static class FlattenExtension
 {
+    /// <summary>
+    /// Flattens a nested non-generic <see cref="Result"/> contained inside a <see cref="Result"/> to a single <see cref="Result"/>.
+    /// </summary>
+    /// <param name="result">The nested result to flatten.</param>
+    /// <returns>
+    /// If <paramref name="result"/> is successful, returns the inner <see cref="Result"/> value; otherwise forwards the failure.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Result Flatten(this Result<Result> result)
+    {
+        if (result.IsSuccess)
+        {
+            return result.Value;
+        }
+
+        return Result.ForwardFail(result);
+    }
+
     /// <summary>
     /// Flattens a nested <see cref="Result{T}"/> inside a <see cref="Result{Result{T}}"/> to a single <see cref="Result{T}"/>.
     /// </summary>
@@ -28,17 +52,27 @@ public static class FlattenExtension
     /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="resultTask">The task containing the nested result.</param>
     /// <returns>The flattened result as a task.</returns>
-    [DebuggerStepperBoundary]
-    public static async Task<Result<T>> FlattenAsync<T>(this Task<Result<Result<T>>> resultTask)
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Task<Result<T>> FlattenAsync<T>(this Task<Result<Result<T>>> resultTask)
     {
-        var result = await resultTask.ConfigureAwait(false);
-
-        if (result.IsSuccess)
+        if (resultTask.TryGetResult(out var result))
         {
-            return result.Value;
+            Task.FromResult(Flatten(result));
         }
 
-        return Result.ForwardFail<T>(result);
+        return Impl(resultTask);
+
+        static async Task<Result<T>> Impl(Task<Result<Result<T>>> resultTask)
+        {
+            var result = await resultTask.ConfigureAwait(false);
+
+            if (result.IsSuccess)
+            {
+                return result.Value;
+            }
+
+            return Result.ForwardFail<T>(result);
+        }
     }
 
     /// <summary>
@@ -46,17 +80,27 @@ public static class FlattenExtension
     /// </summary>
     /// <param name="resultTask">The task containing the nested result.</param>
     /// <returns>The flattened result as a task.</returns>
-    [DebuggerStepperBoundary]
-    public static async Task<Result> FlattenAsync(this Task<Result<Result>> resultTask)
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Task<Result> FlattenAsync(this Task<Result<Result>> resultTask)
     {
-        var result = await resultTask.ConfigureAwait(false);
-
-        if (result.IsSuccess)
+        if (resultTask.TryGetResult(out var result))
         {
-            return result.Value;
+            Task.FromResult(Flatten(result));
         }
 
-        return (Result)result;
+        return Impl(resultTask);
+
+        static async Task<Result> Impl(Task<Result<Result>> resultTask)
+        {
+            var result = await resultTask.ConfigureAwait(false);
+
+            if (result.IsSuccess)
+            {
+                return result.Value;
+            }
+
+            return (Result)result;
+        }
     }
 
     /// <summary>
@@ -81,17 +125,27 @@ public static class FlattenExtension
     /// <typeparam name="T">The type of the value (unused).</typeparam>
     /// <param name="resultTask">The task containing the sequence of results.</param>
     /// <returns>The first failed result, or a successful result if all are successful, as a task.</returns>
-    [DebuggerStepperBoundary]
-    public static async Task<Result> FlattenAsync<T>(this Task<IEnumerable<Result>> resultTask)
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Task<Result> FlattenAsync<T>(this Task<IEnumerable<Result>> resultTask)
     {
-        var results = await resultTask.ConfigureAwait(false);
-
-        if (results.Any(x => !x.IsSuccess))
+        if (resultTask.TryGetResult(out var result))
         {
-            return results.First(x => !x.IsSuccess);
+            return Task.FromResult(Flatten(result));
         }
 
-        return Result.Ok();
+        return Impl(resultTask);
+
+        static async Task<Result> Impl(Task<IEnumerable<Result>> resultTask)
+        {
+            var results = await resultTask.ConfigureAwait(false);
+
+            if (results.Any(x => !x.IsSuccess))
+            {
+                return results.First(x => !x.IsSuccess);
+            }
+
+            return Result.Ok();
+        }
     }
 
 #if NETSTANDARD2_1_OR_GREATER || NET6_0_OR_GREATER
@@ -102,17 +156,27 @@ public static class FlattenExtension
     /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="resultTask">The value task containing the nested result.</param>
     /// <returns>The flattened result as a value task.</returns>
-    [DebuggerStepperBoundary]
-    public static async ValueTask<Result<T>> FlattenAsync<T>(this ValueTask<Result<Result<T>>> resultTask)
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ValueTask<Result<T>> FlattenAsync<T>(this ValueTask<Result<Result<T>>> resultTask)
     {
-        var result = await resultTask.ConfigureAwait(false);
-
-        if (result.IsSuccess)
+        if (resultTask.TryGetResult(out var result))
         {
-            return result.Value;
+            return AsyncHelper.CreateValueTask(Flatten(result));
         }
 
-        return Result.ForwardFail<T>(result);
+        return Impl(resultTask);
+
+        static async ValueTask<Result<T>> Impl(ValueTask<Result<Result<T>>> resultTask)
+        {
+            var result = await resultTask.ConfigureAwait(false);
+
+            if (result.IsSuccess)
+            {
+                return result.Value;
+            }
+
+            return Result.ForwardFail<T>(result);
+        }
     }
 
     /// <summary>
@@ -120,17 +184,27 @@ public static class FlattenExtension
     /// </summary>
     /// <param name="resultTask">The value task containing the nested result.</param>
     /// <returns>The flattened result as a value task.</returns>
-    [DebuggerStepperBoundary]
-    public static async ValueTask<Result> FlattenAsync(this ValueTask<Result<Result>> resultTask)
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ValueTask<Result> FlattenAsync(this ValueTask<Result<Result>> resultTask)
     {
-        var result = await resultTask.ConfigureAwait(false);
-
-        if (result.IsSuccess)
+        if (resultTask.TryGetResult(out var result))
         {
-            return result.Value;
+            return AsyncHelper.CreateValueTask(Flatten(result));
         }
 
-        return (Result)result;
+        return Impl(resultTask);
+
+        static async ValueTask<Result> Impl(ValueTask<Result<Result>> resultTask)
+        {
+            var result = await resultTask.ConfigureAwait(false);
+
+            if (result.IsSuccess)
+            {
+                return result.Value;
+            }
+
+            return (Result)result;
+        }
     }
 
     /// <summary>
@@ -139,17 +213,27 @@ public static class FlattenExtension
     /// <typeparam name="T">The type of the value (unused).</typeparam>
     /// <param name="resultTask">The value task containing the sequence of results.</param>
     /// <returns>The first failed result, or a successful result if all are successful, as a value task.</returns>
-    [DebuggerStepperBoundary]
-    public static async ValueTask<Result> FlattenAsync<T>(this ValueTask<IEnumerable<Result>> resultTask)
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ValueTask<Result> FlattenAsync<T>(this ValueTask<IEnumerable<Result>> resultTask)
     {
-        var results = await resultTask.ConfigureAwait(false);
-
-        if (results.Any(x => !x.IsSuccess))
+        if (resultTask.TryGetResult(out var result))
         {
-            return results.First(x => !x.IsSuccess);
+            return AsyncHelper.CreateValueTask(Flatten(result));
         }
 
-        return Result.Ok();
+        return Impl(resultTask);
+
+        static async ValueTask<Result> Impl(ValueTask<IEnumerable<Result>> resultTask)
+        {
+            var results = await resultTask.ConfigureAwait(false);
+
+            if (results.Any(x => !x.IsSuccess))
+            {
+                return results.First(x => !x.IsSuccess);
+            }
+
+            return Result.Ok();
+        }
     }
 
     /// <summary>

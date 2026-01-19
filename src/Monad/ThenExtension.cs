@@ -1,7 +1,13 @@
-﻿using System.Diagnostics;
+﻿using ForgeSharp.Results.Infrastructure;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace ForgeSharp.Results.Monad;
 
+/// <summary>
+/// Provides chaining operators that execute transformations when a <see cref="Result"/> or <see cref="Result{T}"/> is successful.
+/// These methods return new <see cref="Result"/> instances while forwarding failures unchanged.
+/// </summary>
 public static class ThenExtension
 {
     /// <summary>
@@ -11,7 +17,7 @@ public static class ThenExtension
     /// <param name="result">The result.</param>
     /// <param name="func">The function to execute.</param>
     /// <returns>A new result.</returns>
-    [DebuggerStepperBoundary]
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Result<TResult> Then<TResult>(this Result result, Func<TResult> func)
     {
         if (result.IsSuccess)
@@ -30,7 +36,7 @@ public static class ThenExtension
     /// <param name="result">The result.</param>
     /// <param name="func">The function to execute.</param>
     /// <returns>A new result.</returns>
-    [DebuggerStepperBoundary]
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Result<TResult> Then<T, TResult>(this Result<T> result, Func<T, TResult> func)
     {
         if (result.IsSuccess)
@@ -85,17 +91,27 @@ public static class ThenExtension
     /// <param name="resultTask">The result task.</param>
     /// <param name="func">The function to execute.</param>
     /// <returns>A task representing the asynchronous operation, with a new result.</returns>
-    [DebuggerStepperBoundary]
-    public static async Task<Result<TResult>> ThenAsync<TResult>(this Task<Result> resultTask, Func<TResult> func)
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Task<Result<TResult>> ThenAsync<TResult>(this Task<Result> resultTask, Func<TResult> func)
     {
-        var result = await resultTask.ConfigureAwait(false);
-
-        if (result.IsSuccess)
+        if (resultTask.TryGetResult(out var result))
         {
-            return Result.Ok(func());
+            return Task.FromResult(Then(result, func));
         }
 
-        return Result.ForwardFail<TResult>(result);
+        return Impl(resultTask, func);
+
+        static async Task<Result<TResult>> Impl(Task<Result> resultTask, Func<TResult> func)
+        {
+            var result = await resultTask.ConfigureAwait(false);
+
+            if (result.IsSuccess)
+            {
+                return Result.Ok(func());
+            }
+
+            return Result.ForwardFail<TResult>(result);
+        }
     }
 
     /// <summary>
@@ -106,17 +122,27 @@ public static class ThenExtension
     /// <param name="resultTask">The result task.</param>
     /// <param name="func">The function to execute.</param>
     /// <returns>A task representing the asynchronous operation, with a new result.</returns>
-    [DebuggerStepperBoundary]
-    public static async Task<Result<TResult>> ThenAsync<T, TResult>(this Task<Result<T>> resultTask, Func<T, TResult> func)
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Task<Result<TResult>> ThenAsync<T, TResult>(this Task<Result<T>> resultTask, Func<T, TResult> func)
     {
-        var result = await resultTask.ConfigureAwait(false);
-
-        if (result.IsSuccess)
+        if (resultTask.TryGetResult(out var result))
         {
-            return Result.Ok(func(result.Value));
+            return Task.FromResult(Then(result, func));
         }
 
-        return Result.ForwardFail<TResult>(result);
+        return Impl(resultTask, func);
+
+        static async Task<Result<TResult>> Impl(Task<Result<T>> resultTask, Func<T, TResult> func)
+        {
+            var result = await resultTask.ConfigureAwait(false);
+
+            if (result.IsSuccess)
+            {
+                return Result.Ok(func(result.Value));
+            }
+
+            return Result.ForwardFail<TResult>(result);
+        }
     }
 
     /// <summary>
@@ -227,17 +253,27 @@ public static class ThenExtension
     /// <param name="resultTask">The result task.</param>
     /// <param name="func">The function to execute.</param>
     /// <returns>A ValueTask representing the asynchronous operation, with a new result.</returns>
-    [DebuggerStepperBoundary]
-    public static async ValueTask<Result<TResult>> ThenAsync<TResult>(this ValueTask<Result> resultTask, Func<TResult> func)
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ValueTask<Result<TResult>> ThenAsync<TResult>(this ValueTask<Result> resultTask, Func<TResult> func)
     {
-        var result = await resultTask.ConfigureAwait(false);
-
-        if (result.IsSuccess)
+        if (resultTask.TryGetResult(out var result))
         {
-            return Result.Ok(func());
+            return AsyncHelper.CreateValueTask(Then(result, func));
         }
 
-        return Result.ForwardFail<TResult>(result);
+        return Impl(resultTask, func);
+
+        static async ValueTask<Result<TResult>> Impl(ValueTask<Result> resultTask, Func<TResult> func)
+        {
+            var result = await resultTask.ConfigureAwait(false);
+
+            if (result.IsSuccess)
+            {
+                return Result.Ok(func());
+            }
+
+            return Result.ForwardFail<TResult>(result);
+        }
     }
 
     /// <summary>
@@ -248,17 +284,27 @@ public static class ThenExtension
     /// <param name="resultTask">The result task.</param>
     /// <param name="func">The function to execute.</param>
     /// <returns>A ValueTask representing the asynchronous operation, with a new result.</returns>
-    [DebuggerStepperBoundary]
-    public static async ValueTask<Result<TResult>> ThenAsync<T, TResult>(this ValueTask<Result<T>> resultTask, Func<T, TResult> func)
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ValueTask<Result<TResult>> ThenAsync<T, TResult>(this ValueTask<Result<T>> resultTask, Func<T, TResult> func)
     {
-        var result = await resultTask.ConfigureAwait(false);
-
-        if (result.IsSuccess)
+        if (resultTask.TryGetResult(out var result))
         {
-            return Result.Ok(func(result.Value));
+            AsyncHelper.CreateValueTask(Then(result, func));
         }
 
-        return Result.ForwardFail<TResult>(result);
+        return Impl(resultTask, func);
+
+        static async ValueTask<Result<TResult>> Impl(ValueTask<Result<T>> resultTask, Func<T, TResult> func)
+        {
+            var result = await resultTask.ConfigureAwait(false);
+
+            if (result.IsSuccess)
+            {
+                return Result.Ok(func(result.Value));
+            }
+
+            return Result.ForwardFail<TResult>(result);
+        }
     }
 
     /// <summary>

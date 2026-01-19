@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using ForgeSharp.Results.Infrastructure;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 
@@ -34,17 +35,27 @@ public static class MiscExtension
     /// <param name="resultTask">The result task.</param>
     /// <param name="defaultValue">The default value to return if not successful.</param>
     /// <returns>The value or the default value as a task.</returns>
-    [DebuggerStepperBoundary]
-    public static async Task<T> GetOrDefaultAsync<T>(this Task<Result<T>> resultTask, T defaultValue = default!)
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Task<T> GetOrDefaultAsync<T>(this Task<Result<T>> resultTask, T defaultValue = default!)
     {
-        var result = await resultTask.ConfigureAwait(false);
-
-        if (result.IsSuccess)
+        if (resultTask.TryGetResult(out var result))
         {
-            return result.Value;
+            return Task.FromResult(GetOrDefault(result, defaultValue));
         }
 
-        return defaultValue;
+        return Impl(resultTask, defaultValue);
+
+        static async Task<T> Impl(Task<Result<T>> resultTask, T defaultValue)
+        {
+            var result = await resultTask.ConfigureAwait(false);
+
+            if (result.IsSuccess)
+            {
+                return result.Value;
+            }
+
+            return defaultValue;
+        }
     }
 
     /// <summary>
@@ -54,7 +65,7 @@ public static class MiscExtension
     /// <param name="result">The result.</param>
     /// <returns>The value.</returns>
     /// <exception cref="ArgumentException">Thrown if the result is not successful and not an exception.</exception>
-    [DebuggerStepperBoundary]
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T GetOrThrow<T>(this IResult<T> result)
     {
         if (result.IsSuccess)
@@ -77,22 +88,32 @@ public static class MiscExtension
     /// <param name="resultTask">The result task.</param>
     /// <returns>The value as a task.</returns>
     /// <exception cref="ArgumentException">Thrown if the result is not successful and not an exception.</exception>
-    [DebuggerStepperBoundary]
-    public static async Task<T> GetOrThrowAsync<T>(this Task<Result<T>> resultTask)
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Task<T> GetOrThrowAsync<T>(this Task<Result<T>> resultTask)
     {
-        var result = await resultTask.ConfigureAwait(false);
-
-        if (result.IsSuccess)
+        if (resultTask.TryGetResult(out var result))
         {
-            return result.Value;
+            return Task.FromResult(GetOrThrow(result));
         }
 
-        if (result.Status == Result.State.Exception)
-        {
-            ExceptionDispatchInfo.Capture(result.Exception).Throw();
-        }
+        return Impl(resultTask);
 
-        throw new ArgumentException(result.Message);
+        static async Task<T> Impl(Task<Result<T>> resultTask)
+        {
+            var result = await resultTask.ConfigureAwait(false);
+
+            if (result.IsSuccess)
+            {
+                return result.Value;
+            }
+
+            if (result.Status == Result.State.Exception)
+            {
+                ExceptionDispatchInfo.Capture(result.Exception).Throw();
+            }
+
+            throw new ArgumentException(result.Message);
+        }
     }
 
     /// <summary>
@@ -100,10 +121,20 @@ public static class MiscExtension
     /// </summary>
     /// <param name="resultTask">The result task.</param>
     /// <returns>True if successful; otherwise, false.</returns>
-    [DebuggerStepperBoundary]
-    public static async Task<bool> IsSuccessAsync(this Task<Result> resultTask)
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Task<bool> IsSuccessAsync(this Task<Result> resultTask)
     {
-        return (await resultTask.ConfigureAwait(false)).IsSuccess;
+        if (resultTask.TryGetResult(out var result))
+        {
+            return Task.FromResult(result.IsSuccess);
+        }
+
+        return Impl(resultTask);
+
+        static async Task<bool> Impl(Task<Result> resultTask)
+        {
+            return (await resultTask.ConfigureAwait(false)).IsSuccess;
+        }
     }
 
     /// <summary>
@@ -112,10 +143,20 @@ public static class MiscExtension
     /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="resultTask">The result task.</param>
     /// <returns>True if successful; otherwise, false.</returns>
-    [DebuggerStepperBoundary]
-    public static async Task<bool> IsSuccessAsync<T>(this Task<Result<T>> resultTask)
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Task<bool> IsSuccessAsync<T>(this Task<Result<T>> resultTask)
     {
-        return (await resultTask.ConfigureAwait(false)).IsSuccess;
+        if (resultTask.TryGetResult(out var result))
+        {
+            return Task.FromResult(result.IsSuccess);
+        }
+
+        return Impl(resultTask);
+
+        static async Task<bool> Impl(Task<Result<T>> resultTask)
+        {
+            return (await resultTask.ConfigureAwait(false)).IsSuccess;
+        }
     }
 
     /// <summary>
@@ -124,7 +165,7 @@ public static class MiscExtension
     /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="result">The result.</param>
     /// <returns>A successful result if the value is not null; otherwise, a failed result.</returns>
-    [DebuggerStepperBoundary]
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Result<T> EnsureNotNull<T>(this Result<T?> result)
     {
         if (result.IsSuccess)
@@ -146,22 +187,32 @@ public static class MiscExtension
     /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="resultTask">The result task.</param>
     /// <returns>A successful result if the value is not null; otherwise, a failed result as a task.</returns>
-    [DebuggerStepperBoundary]
-    public static async Task<Result<T>> EnsureNotNullAsync<T>(this Task<Result<T?>> resultTask)
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Task<Result<T>> EnsureNotNullAsync<T>(this Task<Result<T?>> resultTask)
     {
-        var result = await resultTask.ConfigureAwait(false);
-
-        if (result.IsSuccess)
+        if (resultTask.TryGetResult(out var result))
         {
-            if (result.Value is not null)
-            {
-                return Result.Ok(result.Value);
-            }
-
-            return Result.Fail<T>($"Result<{typeof(T).Name}> is null");
+            return Task.FromResult(EnsureNotNull(result));
         }
 
-        return Result.ForwardFail<T>(result);
+        return Impl(resultTask);
+
+        static async Task<Result<T>> Impl(Task<Result<T?>> resultTask)
+        {
+            var result = await resultTask.ConfigureAwait(false);
+
+            if (result.IsSuccess)
+            {
+                if (result.Value is not null)
+                {
+                    return Result.Ok(result.Value);
+                }
+
+                return Result.Fail<T>($"Result<{typeof(T).Name}> is null");
+            }
+
+            return Result.ForwardFail<T>(result);
+        }
     }
 
     /// <summary>
@@ -183,9 +234,19 @@ public static class MiscExtension
     /// <param name="resultTask">The result task.</param>
     /// <returns>The non-generic result as a task.</returns>
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static async Task<Result> AsResultAsync<T>(this Task<Result<T>> resultTask)
+    public static Task<Result> AsResultAsync<T>(this Task<Result<T>> resultTask)
     {
-        return (Result)await resultTask.ConfigureAwait(false);
+        if (resultTask.TryGetResult(out var result))
+        {
+            return Task.FromResult((Result)result);
+        }
+
+        return Impl(resultTask);
+
+        static async Task<Result> Impl(Task<Result<T>> resultTask)
+        {
+            return (Result)await resultTask.ConfigureAwait(false);
+        }
     }
 
     /// <summary>
@@ -213,17 +274,27 @@ public static class MiscExtension
     /// <param name="resultTask">The result task.</param>
     /// <param name="restoreFunc">The function to restore the result.</param>
     /// <returns>The original result if successful; otherwise, the restored result as a task.</returns>
-    [DebuggerStepperBoundary]
-    public static async Task<Result<T>> RestoreAsync<T>(this Task<Result<T>> resultTask, Func<IResult, Result<T>> restoreFunc)
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Task<Result<T>> RestoreAsync<T>(this Task<Result<T>> resultTask, Func<IResult, Result<T>> restoreFunc)
     {
-        var result = await resultTask.ConfigureAwait(false);
-
-        if (result.IsSuccess)
+        if (resultTask.TryGetResult(out var result))
         {
-            return result;
+            return Task.FromResult(Restore(result, restoreFunc));
         }
 
-        return restoreFunc(result);
+        return Impl(resultTask, restoreFunc);
+
+        static async Task<Result<T>> Impl(Task<Result<T>> resultTask, Func<IResult, Result<T>> restoreFunc)
+        {
+            var result = await resultTask.ConfigureAwait(false);
+
+            if (result.IsSuccess)
+            {
+                return result;
+            }
+
+            return restoreFunc(result);
+        }
     }
 
     /// <summary>
@@ -255,17 +326,27 @@ public static class MiscExtension
     /// <param name="resultTask">The result value task.</param>
     /// <param name="defaultValue">The default value to return if not successful.</param>
     /// <returns>The value or the default value as a value task.</returns>
-    [DebuggerStepperBoundary]
-    public static async ValueTask<T> GetOrDefaultAsync<T>(this ValueTask<Result<T>> resultTask, T defaultValue = default!)
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ValueTask<T> GetOrDefaultAsync<T>(this ValueTask<Result<T>> resultTask, T defaultValue = default!)
     {
-        var result = await resultTask.ConfigureAwait(false);
-
-        if (result.IsSuccess)
+        if (resultTask.TryGetResult(out var result))
         {
-            return result.Value;
+            return AsyncHelper.CreateValueTask(GetOrDefault(result, defaultValue));
         }
 
-        return defaultValue;
+        return Impl(resultTask, defaultValue);
+
+        static async ValueTask<T> Impl(ValueTask<Result<T>> resultTask, T defaultValue)
+        {
+            var result = await resultTask.ConfigureAwait(false);
+
+            if (result.IsSuccess)
+            {
+                return result.Value;
+            }
+
+            return defaultValue;
+        }
     }
 
     /// <summary>
@@ -275,22 +356,32 @@ public static class MiscExtension
     /// <param name="resultTask">The result value task.</param>
     /// <returns>The value as a value task.</returns>
     /// <exception cref="ArgumentException">Thrown if the result is not successful and not an exception.</exception>
-    [DebuggerStepperBoundary]
-    public static async ValueTask<T> GetOrThrowAsync<T>(this ValueTask<Result<T>> resultTask)
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ValueTask<T> GetOrThrowAsync<T>(this ValueTask<Result<T>> resultTask)
     {
-        var result = await resultTask.ConfigureAwait(false);
-
-        if (result.IsSuccess)
+        if (resultTask.TryGetResult(out var result))
         {
-            return result.Value;
+            return AsyncHelper.CreateValueTask(GetOrThrow(result));
         }
 
-        if (result.Status == Result.State.Exception)
-        {
-            ExceptionDispatchInfo.Capture(result.Exception).Throw();
-        }
+        return Impl(resultTask);
 
-        throw new ArgumentException(result.Message);
+        static async ValueTask<T> Impl(ValueTask<Result<T>> resultTask)
+        {
+            var result = await resultTask.ConfigureAwait(false);
+
+            if (result.IsSuccess)
+            {
+                return result.Value;
+            }
+
+            if (result.Status == Result.State.Exception)
+            {
+                ExceptionDispatchInfo.Capture(result.Exception).Throw();
+            }
+
+            throw new ArgumentException(result.Message);
+        }
     }
 
     /// <summary>
@@ -298,10 +389,20 @@ public static class MiscExtension
     /// </summary>
     /// <param name="resultTask">The result value task.</param>
     /// <returns>True if successful; otherwise, false as a value task.</returns>
-    [DebuggerStepperBoundary]
-    public static async ValueTask<bool> IsSuccessAsync(this ValueTask<Result> resultTask)
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ValueTask<bool> IsSuccessAsync(this ValueTask<Result> resultTask)
     {
-        return (await resultTask.ConfigureAwait(false)).IsSuccess;
+        if (resultTask.TryGetResult(out var result))
+        {
+            return AsyncHelper.CreateValueTask(result.IsSuccess);
+        }
+
+        return Impl(resultTask);
+
+        static async ValueTask<bool> Impl(ValueTask<Result> resultTask)
+        {
+            return (await resultTask.ConfigureAwait(false)).IsSuccess;
+        }
     }
 
     /// <summary>
@@ -310,10 +411,20 @@ public static class MiscExtension
     /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="resultTask">The result value task.</param>
     /// <returns>True if successful; otherwise, false as a value task.</returns>
-    [DebuggerStepperBoundary]
-    public static async ValueTask<bool> IsSuccess<T>(this ValueTask<Result<T>> resultTask)
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ValueTask<bool> IsSuccess<T>(this ValueTask<Result<T>> resultTask)
     {
-        return (await resultTask.ConfigureAwait(false)).IsSuccess;
+        if (resultTask.TryGetResult(out var result))
+        {
+            return AsyncHelper.CreateValueTask(result.IsSuccess);
+        }
+
+        return Impl(resultTask);
+
+        static async ValueTask<bool> Impl(ValueTask<Result<T>> resultTask)
+        {
+            return (await resultTask.ConfigureAwait(false)).IsSuccess;
+        }
     }
 
     /// <summary>
@@ -322,22 +433,32 @@ public static class MiscExtension
     /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="resultTask">The result value task.</param>
     /// <returns>A successful result if the value is not null; otherwise, a failed result as a value task.</returns>
-    [DebuggerStepperBoundary]
-    public static async ValueTask<Result<T>> EnsureNotNullAsync<T>(this ValueTask<Result<T?>> resultTask)
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ValueTask<Result<T>> EnsureNotNullAsync<T>(this ValueTask<Result<T?>> resultTask)
     {
-        var result = await resultTask.ConfigureAwait(false);
-
-        if (result.IsSuccess)
+        if (resultTask.TryGetResult(out var result))
         {
-            if (result.Value is not null)
-            {
-                return Result.Ok(result.Value);
-            }
-
-            return Result.Fail<T>($"Result<{typeof(T).Name}> is null");
+            return AsyncHelper.CreateValueTask(EnsureNotNull(result));
         }
 
-        return Result.ForwardFail<T>(result);
+        return Impl(resultTask);
+
+        static async ValueTask<Result<T>> Impl(ValueTask<Result<T?>> resultTask)
+        {
+            var result = await resultTask.ConfigureAwait(false);
+
+            if (result.IsSuccess)
+            {
+                if (result.Value is not null)
+                {
+                    return Result.Ok(result.Value);
+                }
+
+                return Result.Fail<T>($"Result<{typeof(T).Name}> is null");
+            }
+
+            return Result.ForwardFail<T>(result);
+        }
     }
 
     /// <summary>
@@ -346,10 +467,20 @@ public static class MiscExtension
     /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="resultTask">The result value task.</param>
     /// <returns>The non-generic result as a value task.</returns>
-    [DebuggerStepperBoundary]
-    public static async ValueTask<Result> AsResultAsync<T>(this ValueTask<Result<T>> resultTask)
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ValueTask<Result> AsResultAsync<T>(this ValueTask<Result<T>> resultTask)
     {
-        return (Result)await resultTask.ConfigureAwait(false);
+        if (resultTask.TryGetResult(out var result))
+        {
+            return AsyncHelper.CreateValueTask((Result)result);
+        }
+
+        return Impl(resultTask);
+
+        static async ValueTask<Result> Impl(ValueTask<Result<T>> resultTask)
+        {
+            return (Result)await resultTask.ConfigureAwait(false);
+        }
     }
 
 #endif
