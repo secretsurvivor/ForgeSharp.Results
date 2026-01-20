@@ -399,4 +399,6 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
-src/pack-NuGet.bat
+
+# ForgeSharp Utilities
+pack-NuGet.bat
