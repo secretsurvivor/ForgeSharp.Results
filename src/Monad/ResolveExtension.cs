@@ -111,7 +111,7 @@ public static class ResolveExtension
     [DebuggerStepperBoundary]
     public static async Task<IEnumerable<Result>> ResolveAsync(this IEnumerable<Task<Result>> resultTasks)
     {
-        var results = new List<Result>();
+        var results = CreateList(resultTasks);
 
         foreach (var result in resultTasks)
         {
@@ -119,6 +119,16 @@ public static class ResolveExtension
         }
 
         return results;
+
+        static List<Result> CreateList(IEnumerable<Task<Result>> resultTasks)
+        {
+            return resultTasks switch
+            {
+                Task<Result>[] array => new List<Result>(array.Length),
+                ICollection<Task<Result>> collection => new List<Result>(collection.Count),
+                _ => [],
+            };
+        }
     }
 
     /// <summary>
@@ -130,7 +140,7 @@ public static class ResolveExtension
     [DebuggerStepperBoundary]
     public static async Task<IEnumerable<Result<T>>> ResolveAsync<T>(this IEnumerable<Task<Result<T>>> resultTasks)
     {
-        var results = new List<Result<T>>();
+        var results = CreateList(resultTasks);
 
         foreach (var result in resultTasks)
         {
@@ -138,5 +148,15 @@ public static class ResolveExtension
         }
 
         return results;
+
+        static List<Result<T>> CreateList(IEnumerable<Task<Result<T>>> resultTasks)
+        {
+            return resultTasks switch
+            {
+                Task<Result>[] array => new List<Result<T>>(array.Length),
+                ICollection<Task<Result>> collection => new List<Result<T>>(collection.Count),
+                _ => [],
+            };
+        }
     }
 }
