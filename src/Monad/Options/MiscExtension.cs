@@ -1,0 +1,123 @@
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
+
+namespace ForgeSharp.Results.Monad.Options;
+
+/// <summary>
+/// Provides miscellaneous utility operators for <see cref="Options{T}"/> including filtering,
+/// value extraction, and predicate checking.
+/// </summary>
+public static class OptionsMiscExtension
+{
+    /// <summary>
+    /// Filters the option based on a predicate.
+    /// </summary>
+    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <param name="option">The option to filter.</param>
+    /// <param name="predicate">The predicate to evaluate.</param>
+    /// <returns>The original option if it has a value and the predicate is true, otherwise <see cref="Options{T}.None()"/>.</returns>
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Options<T> Filter<T>(this Options<T> option, Func<T, bool> predicate)
+    {
+        if (option.HasValue && predicate(option.Value))
+        {
+            return option;
+        }
+
+        return Options<T>.None();
+    }
+
+    /// <summary>
+    /// Returns the value of the option or a default value if the option has no value.
+    /// </summary>
+    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <param name="option">The option.</param>
+    /// <param name="defaultValue">The default value to return if the option has no value.</param>
+    /// <returns>The value of the option, or the default value if the option has no value.</returns>
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T GetValueOrDefault<T>(this Options<T> option, T defaultValue)
+    {
+        return option.HasValue ? option.Value : defaultValue;
+    }
+
+    /// <summary>
+    /// Returns the value of the option or computes a default value if the option has no value.
+    /// </summary>
+    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <param name="option">The option.</param>
+    /// <param name="defaultValue">The function to compute the default value.</param>
+    /// <returns>The value of the option, or the computed default value if the option has no value.</returns>
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T GetValueOrElse<T>(this Options<T> option, Func<T> defaultValue)
+    {
+        return option.HasValue ? option.Value : defaultValue();
+    }
+
+    /// <summary>
+    /// Determines whether the option has a value that satisfies the given predicate.
+    /// </summary>
+    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <param name="option">The option.</param>
+    /// <param name="predicate">The predicate to evaluate.</param>
+    /// <returns>True if the option has a value and the predicate is true; otherwise, false.</returns>
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool Exists<T>(this Options<T> option, Func<T, bool> predicate)
+    {
+        return option.HasValue && predicate(option.Value);
+    }
+
+    /// <summary>
+    /// Determines whether all values in the option satisfy the given predicate.
+    /// </summary>
+    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <param name="option">The option.</param>
+    /// <param name="predicate">The predicate to evaluate.</param>
+    /// <returns>True if the option has no value or the predicate is true for the value; otherwise, false.</returns>
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool ForAll<T>(this Options<T> option, Func<T, bool> predicate)
+    {
+        return !option.HasValue || predicate(option.Value);
+    }
+
+    /// <summary>
+    /// Converts the option to a nullable value.
+    /// </summary>
+    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <param name="option">The option.</param>
+    /// <returns>The value wrapped in a nullable, or null if the option has no value.</returns>
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T? ToNullable<T>(this Options<T> option) where T : struct
+    {
+        return option.HasValue ? option.Value : null;
+    }
+
+    /// <summary>
+    /// Converts the option to an enumerable sequence.
+    /// </summary>
+    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <param name="option">The option.</param>
+    /// <returns>An enumerable containing the value if present, or an empty enumerable otherwise.</returns>
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static IEnumerable<T> ToEnumerable<T>(this Options<T> option)
+    {
+        if (option.HasValue)
+        {
+            yield return option.Value;
+        }
+    }
+
+    /// <summary>
+    /// Folds the option into a single value.
+    /// </summary>
+    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <typeparam name="TResult">The type of the result.</typeparam>
+    /// <param name="option">The option.</param>
+    /// <param name="defaultValue">The value to return if the option has no value.</param>
+    /// <param name="folder">The function to apply if the option has a value.</param>
+    /// <returns>The result of applying the folder function if the option has a value, or the default value otherwise.</returns>
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TResult Fold<T, TResult>(this Options<T> option, TResult defaultValue, Func<T, TResult> folder)
+    {
+        return option.HasValue ? folder(option.Value) : defaultValue;
+    }
+}

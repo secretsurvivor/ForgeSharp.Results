@@ -163,6 +163,10 @@ public readonly struct Result : IResult, ISerializable
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Result<T> Fail<T>(Exception exception) => Result<T>.Fail(exception);
 
+    public static Result<TValue, TError> Ok<TValue, TError>(TValue value) => Result<TValue, TError>.Ok(value);
+
+    public static Result<TValue, TError> Fail<TValue, TError>(TError error) => Result<TValue, TError>.Fail(error);
+
     /// <summary>
     /// Forwards a failed <see cref="IResult"/> as a <see cref="Result"/>.
     /// </summary>
@@ -218,6 +222,18 @@ public readonly struct Result : IResult, ISerializable
         }
     }
 
+    public static Result<T, TError> Capture<T, TError>(Func<T> func, Func<Exception, TError> mapException)
+    {
+        try
+        {
+            return Ok<T, TError>(func());
+        }
+        catch (Exception e)
+        {
+            return Fail<T, TError>(mapException(e));
+        }
+    }
+
     /// <summary>
     /// Executes an asynchronous action and captures any exception as a failed result.
     /// </summary>
@@ -253,6 +269,18 @@ public readonly struct Result : IResult, ISerializable
         catch (Exception e)
         {
             return Fail<T>(e);
+        }
+    }
+
+    public static async Task<Result<T, TError>> CaptureAsync<T, TError>(Func<Task<T>> func, Func<Exception, TError> mapException)
+    {
+        try
+        {
+            return Ok<T, TError>(await func().ConfigureAwait(false));
+        }
+        catch (Exception e)
+        {
+            return Fail<T, TError>(mapException(e));
         }
     }
 
@@ -469,4 +497,68 @@ public readonly struct Result<T> : IResult<T>, ISerializable
             info.AddValue(nameof(Value), Value, typeof(T));
         }
     }
+}
+
+/// <summary>
+/// Represents the result of an operation with a value or error type.
+/// </summary>
+/// <typeparam name="TValue">The type of the successful value.</typeparam>
+/// <typeparam name="TError">The type of the error.</typeparam>
+[StructLayout(LayoutKind.Sequential), Serializable]
+public readonly struct Result<TValue, TError>
+{
+    /// <summary>
+    /// Gets a value indicating whether the operation was successful.
+    /// </summary>
+    public bool IsSuccess { [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
+
+    /// <summary>
+    /// Gets the value associated with the result if the operation was successful.
+    /// </summary>
+    public TValue Value { [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
+
+    /// <summary>
+    /// Gets the error associated with the result if the operation failed.
+    /// </summary>
+    public TError Error { [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Result{TValue, TError}"/> struct with a successful value.
+    /// </summary>
+    /// <param name="value">The successful value.</param>
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal Result(TValue value)
+    {
+        IsSuccess = true;
+        Value = value;
+        Error = default!;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Result{TValue, TError}"/> struct with an error.
+    /// </summary>
+    /// <param name="error">The error.</param>
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal Result(TError error)
+    {
+        IsSuccess = false;
+        Value = default!;
+        Error = error;
+    }
+
+    /// <summary>
+    /// Creates a successful <see cref="Result{TValue, TError}"/> with a value.
+    /// </summary>
+    /// <param name="value">The successful value.</param>
+    /// <returns>A successful result with a value.</returns>
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Result<TValue, TError> Ok(TValue value) => new Result<TValue, TError>(value);
+
+    /// <summary>
+    /// Creates a failed <see cref="Result{TValue, TError}"/> with an error.
+    /// </summary>
+    /// <param name="error">The error.</param>
+    /// <returns>A failed result with an error.</returns>
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Result<TValue, TError> Fail(TError error) => new Result<TValue, TError>(error);
 }

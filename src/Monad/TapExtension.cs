@@ -10,6 +10,7 @@ namespace ForgeSharp.Results.Monad;
 /// </summary>
 public static class TapExtension
 {
+    #region Sync
     /// <summary>
     /// Executes an action if the result is successful.
     /// </summary>
@@ -46,6 +47,27 @@ public static class TapExtension
     }
 
     /// <summary>
+    /// Executes an action if the result is successful.
+    /// </summary>
+    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <typeparam name="TError">The type of the custom error.</typeparam>
+    /// <param name="result">The result.</param>
+    /// <param name="action">The action to execute.</param>
+    /// <returns>The original result.</returns>
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Result<T, TError> Tap<T, TError>(this Result<T, TError> result, Action<T> action)
+    {
+        if (result.IsSuccess)
+        {
+            action(result.Value);
+        }
+
+        return result;
+    }
+    #endregion
+
+    #region Async Parameter
+    /// <summary>
     /// Executes an asynchronous action if the result is successful.
     /// </summary>
     /// <param name="result">The result.</param>
@@ -80,6 +102,27 @@ public static class TapExtension
         return result;
     }
 
+    [DebuggerStepperBoundary]
+    /// <summary>
+    /// Executes an asynchronous action if the result is successful.
+    /// </summary>
+    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <typeparam name="TError">The type of the custom error.</typeparam>
+    /// <param name="result">The result.</param>
+    /// <param name="action">The asynchronous action to execute.</param>
+    /// <returns>The original result as a task.</returns>
+    public static async Task<Result<T, TError>> TapAsync<T, TError>(this Result<T, TError> result, Func<T, Task> action)
+    {
+        if (result.IsSuccess)
+        {
+            await action(result.Value).ConfigureAwait(false);
+        }
+
+        return result;
+    }
+    #endregion
+
+    #region Async Result
     /// <summary>
     /// Executes an action if the awaited result is successful.
     /// </summary>
@@ -140,6 +183,39 @@ public static class TapExtension
     }
 
     /// <summary>
+    /// Executes an action if the awaited result is successful.
+    /// </summary>
+    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <typeparam name="TError">The type of the custom error.</typeparam>
+    /// <param name="resultTask">The result task.</param>
+    /// <param name="action">The action to execute.</param>
+    /// <returns>The original result as a task.</returns>
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Task<Result<T, TError>> TapAsync<T, TError>(this Task<Result<T, TError>> resultTask, Action<T> action)
+    {
+        if (resultTask.TryGetResult(out var result))
+        {
+            return Task.FromResult(Tap(result, action));
+        }
+
+        return Impl(resultTask, action);
+
+        static async Task<Result<T, TError>> Impl(Task<Result<T, TError>> resultTask, Action<T> action)
+        {
+            var result = await resultTask.ConfigureAwait(false);
+
+            if (result.IsSuccess)
+            {
+                action(result.Value);
+            }
+
+            return result;
+        }
+    }
+    #endregion
+
+    #region Async Result and Parameter
+    /// <summary>
     /// Executes an asynchronous action if the awaited result is successful.
     /// </summary>
     /// <param name="resultTask">The result task.</param>
@@ -177,6 +253,28 @@ public static class TapExtension
 
         return result;
     }
+
+    /// <summary>
+    /// Executes an asynchronous action if the awaited result is successful.
+    /// </summary>
+    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <typeparam name="TError">The type of the custom error.</typeparam>
+    /// <param name="resultTask">The result task.</param>
+    /// <param name="action">The asynchronous action to execute.</param>
+    /// <returns>The original result as a task.</returns>
+    [DebuggerStepperBoundary]
+    public static async Task<Result<T, TError>> TapAsync<T, TError>(this Task<Result<T, TError>> resultTask, Func<T, Task> action)
+    {
+        var result = await resultTask.ConfigureAwait(false);
+
+        if (result.IsSuccess)
+        {
+            await action(result.Value).ConfigureAwait(false);
+        }
+
+        return result;
+    }
+    #endregion
 
 #if NETSTANDARD2_1_OR_GREATER || NET6_0_OR_GREATER
 

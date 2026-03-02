@@ -29,6 +29,25 @@ public static class MiscExtension
     }
 
     /// <summary>
+    /// Gets the value if the result is successful, otherwise returns the default value.
+    /// </summary>
+    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <typeparam name="TError">The type of the custom error.</typeparam>
+    /// <param name="result">The result.</param>
+    /// <param name="defaultValue">The default value to return if not successful.</param>
+    /// <returns>The value or the default value.</returns>
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T GetOrDefault<T, TError>(this Result<T, TError> result, T defaultValue = default!)
+    {
+        if (!result.IsSuccess)
+        {
+            return defaultValue;
+        }
+
+        return result.Value;
+    }
+
+    /// <summary>
     /// Gets the value if the awaited result is successful, otherwise returns the default value.
     /// </summary>
     /// <typeparam name="T">The type of the value.</typeparam>
@@ -46,6 +65,37 @@ public static class MiscExtension
         return Impl(resultTask, defaultValue);
 
         static async Task<T> Impl(Task<Result<T>> resultTask, T defaultValue)
+        {
+            var result = await resultTask.ConfigureAwait(false);
+
+            if (result.IsSuccess)
+            {
+                return result.Value;
+            }
+
+            return defaultValue;
+        }
+    }
+
+    /// <summary>
+    /// Gets the value if the awaited result is successful, otherwise returns the default value.
+    /// </summary>
+    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <typeparam name="TError">The type of the custom error.</typeparam>
+    /// <param name="resultTask">The result task.</param>
+    /// <param name="defaultValue">The default value to return if not successful.</param>
+    /// <returns>The value or the default value as a task.</returns>
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Task<T> GetOrDefaultAsync<T, TError>(this Task<Result<T, TError>> resultTask, T defaultValue = default!)
+    {
+        if (resultTask.TryGetResult(out var result))
+        {
+            return Task.FromResult(GetOrDefault(result, defaultValue));
+        }
+
+        return Impl(resultTask, defaultValue);
+
+        static async Task<T> Impl(Task<Result<T, TError>> resultTask, T defaultValue)
         {
             var result = await resultTask.ConfigureAwait(false);
 
@@ -160,6 +210,29 @@ public static class MiscExtension
     }
 
     /// <summary>
+    /// Determines whether the awaited result is successful.
+    /// </summary>
+    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <typeparam name="TError">The type of the custom error.</typeparam>
+    /// <param name="resultTask">The result task.</param>
+    /// <returns>True if successful; otherwise, false.</returns>
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Task<bool> IsSuccessAsync<T, TError>(this Task<Result<T, TError>> resultTask)
+    {
+        if (resultTask.TryGetResult(out var result))
+        {
+            return Task.FromResult(result.IsSuccess);
+        }
+
+        return Impl(resultTask);
+
+        static async Task<bool> Impl(Task<Result<T, TError>> resultTask)
+        {
+            return (await resultTask.ConfigureAwait(false)).IsSuccess;
+        }
+    }
+
+    /// <summary>
     /// Ensures that the value of a successful result is not null.
     /// </summary>
     /// <typeparam name="T">The type of the value.</typeparam>
@@ -224,7 +297,7 @@ public static class MiscExtension
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Result AsResult<T>(this Result<T> result)
     {
-        return (Result)result;
+        return (Result) result;
     }
 
     /// <summary>
@@ -238,14 +311,14 @@ public static class MiscExtension
     {
         if (resultTask.TryGetResult(out var result))
         {
-            return Task.FromResult((Result)result);
+            return Task.FromResult((Result) result);
         }
 
         return Impl(resultTask);
 
         static async Task<Result> Impl(Task<Result<T>> resultTask)
         {
-            return (Result)await resultTask.ConfigureAwait(false);
+            return (Result) await resultTask.ConfigureAwait(false);
         }
     }
 
@@ -472,14 +545,14 @@ public static class MiscExtension
     {
         if (resultTask.TryGetResult(out var result))
         {
-            return AsyncHelper.CreateValueTask((Result)result);
+            return AsyncHelper.CreateValueTask((Result) result);
         }
 
         return Impl(resultTask);
 
         static async ValueTask<Result> Impl(ValueTask<Result<T>> resultTask)
         {
-            return (Result)await resultTask.ConfigureAwait(false);
+            return (Result) await resultTask.ConfigureAwait(false);
         }
     }
 
@@ -565,18 +638,10 @@ public static class MiscExtension
     public static IReadOnlyList<T> ExtractValuesOrDefault<T>(this EnumerableResult<T> results, T defaultValue = default!)
     {
         var values = new T[results.Total];
-        var index = 0;
+        int index = 0;
 
-        results.ForEach(result =>
-        {
-            if (result.IsSuccess)
-            {
-                values[index] = result.Value;
-            }
-            else
-            {
-                values[index] = defaultValue;
-            }
+        results.ForEach(result => {
+            values[index] = result.IsSuccess ? result.Value : defaultValue;
 
             index++;
         });
