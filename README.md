@@ -21,6 +21,9 @@
 - **Composable Pipelines:**  
   Build synchronous and asynchronous pipelines for result-based workflows, with full LINQ support for expressive, query-based composition.
 
+- **Seamless I/O Integration:**  
+  Wrap file and directory operations in `Result` types for safe, exception-free I/O workflows with built-in error handling.
+
 ---
 
 ## Pipelines & LINQ Integration
@@ -48,13 +51,44 @@ if (result.IsSuccess)
 
 ForgeSharp.Results provides a rich set of extension methods to make working with results functional, expressive, and safe in both synchronous and asynchronous scenarios.
 
+### File & Directory Integration
+
+**New in this release:** ForgeSharp.Results now provides seamless integration with `System.IO` operations through extension methods that wrap file and directory operations in `Result` types, enabling safe, exception-free I/O workflows.
+
+#### File Operations
+- **OpenAsResult / OpenReadAsResult / OpenWriteAsResult**  
+  Open files and receive a `Result<FileStream>` instead of exceptions.  
+  _Example:_  
+  `fileInfo.OpenReadAsResult(useAsync: true)`  
+  `File.OpenAsResult(path, FileMode.Open, FileAccess.Read, FileShare.Read)`
+
+- **DeleteAsResult**  
+  Delete files safely with error handling built-in.  
+  _Example:_  
+  `File.DeleteAsResult(path)`
+
+#### Directory Operations
+- **CreateAsResult**  
+  Create directories and receive a `Result` or `Result<DirectoryInfo>`.  
+  _Example:_  
+  `directoryInfo.CreateAsResult()`  
+  `Directory.CreateAsResult(path)`
+
+- **DeleteAsResult**  
+  Delete directories safely with error handling.  
+  _Example:_  
+  `directoryInfo.DeleteAsResult()`  
+  `Directory.DeleteAsResult(path)`
+
+All I/O methods handle `UnauthorizedAccessException` and other exceptions gracefully, returning failed results with meaningful error messages instead of throwing.
+
 ### Chaining and Functional Composition
 
-- **Then / ThenAsync**  
+- **Map / MapAsync**  
   Chain operations that return results, propagating failures automatically.  
   _Example:_  
-  `result.Then(x => DoSomething(x))`  
-  `await result.ThenAsync(x => DoSomethingAsync(x))`
+  `result.Map(x => DoSomething(x))`  
+  `await result.MapAsync(x => DoSomethingAsync(x))`
 
 ### Value Extraction and Conversion
 
@@ -100,13 +134,13 @@ ForgeSharp.Results provides a rich set of extension methods to make working with
   `result.Flatten()`  
   `await resultTask.FlattenAsync()`
 
-### Mapping
+### Value Transformation
 
-- **Map / MapAsync**  
-  Map the values of a successful result sequence to a new type.  
+- **Select / SelectAsync**  
+  Transform the value inside a successful result to a new type.  
   _Example:_  
-  `result.Map(x => x.ToString())`  
-  `await resultTask.MapAsync(x => x.ToString())`
+  `result.Select(x => x.ToString())`  
+  `await resultTask.SelectAsync(x => x.ToString())`
 
 ### Resolving Collections
 
@@ -158,8 +192,8 @@ if (!result.IsSuccess)
 
 ```csharp
 var result = GetUser()
-      .Then(user => Validate(user))
-      .Then(validUser => Save(validUser));
+      .Map(user => Validate(user))
+      .Map(validUser => Save(validUser));
 ```
 
 - **Async Pipelines:**  
@@ -167,7 +201,7 @@ var result = GetUser()
 
 ```csharp
 var result = await GetUserAsync()
-      .ThenAsync(user => ValidateAsync(user));
+      .MapAsync(user => ValidateAsync(user));
 ```
 
 - **LINQ Pipelines:**  
@@ -180,6 +214,27 @@ var pipeline =
     select (user, profile);
 
 var result = pipeline.Execute();
+```
+
+- **Safe File & Directory Operations:**  
+  Replace try-catch blocks with explicit result-based I/O workflows.
+
+```csharp
+// Create a directory and chain operations
+var result = Directory.CreateAsResult(@"C:\MyApp\Data")
+    .Map(dir => new FileInfo(Path.Combine(dir.FullName, "config.json")).OpenWriteAsResult());
+
+if (result.IsSuccess)
+{
+    using (var stream = result.Value)
+    {
+        // Write configuration file
+    }
+}
+else
+{
+    Console.WriteLine($"I/O operation failed: {result.Message}");
+}
 ```
 ---
 
@@ -248,6 +303,7 @@ Result<int> valueResult = await Result.CaptureAsync(async () => await MightThrow
 - `Result.cs` - Core result types and logic.
 - `Pipeline.cs` - Pipeline interfaces and implementations.
 - `Monad/` - Extension methods for chaining, mapping, flattening, and more.
+- `Integration/` - I/O integration extensions for safe file and directory operations.
 
 ---
 
