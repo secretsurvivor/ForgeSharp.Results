@@ -4,8 +4,7 @@ using System.Runtime.CompilerServices;
 namespace ForgeSharp.Results.Monad.Options;
 
 /// <summary>
-/// Provides miscellaneous utility operators for <see cref="Options{T}"/> including filtering,
-/// value extraction, and predicate checking.
+/// Utility methods for <see cref="Options{T}"/>.
 /// </summary>
 public static class OptionsMiscExtension
 {
@@ -28,7 +27,7 @@ public static class OptionsMiscExtension
     }
 
     /// <summary>
-    /// Returns the value of the option or a default value if the option has no value.
+    /// Returns the value, or a default if empty.
     /// </summary>
     /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="option">The option.</param>
@@ -41,7 +40,7 @@ public static class OptionsMiscExtension
     }
 
     /// <summary>
-    /// Returns the value of the option or computes a default value if the option has no value.
+    /// Returns the value, or computes a default if empty.
     /// </summary>
     /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="option">The option.</param>
@@ -54,7 +53,7 @@ public static class OptionsMiscExtension
     }
 
     /// <summary>
-    /// Determines whether the option has a value that satisfies the given predicate.
+    /// True if the option has a matching value.
     /// </summary>
     /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="option">The option.</param>
@@ -67,7 +66,7 @@ public static class OptionsMiscExtension
     }
 
     /// <summary>
-    /// Determines whether all values in the option satisfy the given predicate.
+    /// True if empty or the value matches the predicate.
     /// </summary>
     /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="option">The option.</param>
@@ -92,7 +91,7 @@ public static class OptionsMiscExtension
     }
 
     /// <summary>
-    /// Converts the option to an enumerable sequence.
+    /// Yields the value if present, otherwise empty.
     /// </summary>
     /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="option">The option.</param>

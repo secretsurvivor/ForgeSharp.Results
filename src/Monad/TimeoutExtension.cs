@@ -3,15 +3,15 @@
 namespace ForgeSharp.Results.Monad;
 
 /// <summary>
-/// Provides extension methods for applying a timeout to pipeline executions.
+/// Timeout operators for capping pipeline execution time.
 /// </summary>
 public static class TimeoutExtension
 {
     /// <summary>
-    /// Executes the specified synchronous pipeline with a timeout. If the pipeline does not complete within the given timeout, a failed <see cref="Result"/> is returned.
+    /// Wraps the pipeline with a timeout, failing if it doesn't complete in time.
     /// </summary>
     /// <param name="pipeline">The pipeline to execute.</param>
-    /// <param name="timeout">The maximum duration to wait for the pipeline to complete. Must be positive.</param>
+    /// <param name="timeout">The maximum duration to wait. Must be positive.</param>
     /// <returns>A pipeline that enforces the specified timeout.</returns>
     /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="timeout"/> is less than or equal to <see cref="TimeSpan.Zero"/>.</exception>
     [DebuggerStepperBoundary]
@@ -31,11 +31,11 @@ public static class TimeoutExtension
     }
 
     /// <summary>
-    /// Executes the specified asynchronous pipeline with a timeout. If the pipeline does not complete within the given timeout, a failed <see cref="Result"/> is returned.
+    /// Async version of <see cref="Timeout(IPipeline, TimeSpan)"/>.
     /// </summary>
     /// <param name="pipeline">The asynchronous pipeline to execute.</param>
-    /// <param name="timeout">The maximum duration to wait for the pipeline to complete. Must be positive.</param>
-    /// <returns>An asynchronous pipeline that enforces the specified timeout.</returns>
+    /// <param name="timeout">The maximum duration to wait. Must be positive.</param>
+    /// <returns>An async pipeline that enforces the specified timeout.</returns>
     /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="timeout"/> is less than or equal to <see cref="TimeSpan.Zero"/>.</exception>
     [DebuggerStepperBoundary]
     public static IAsyncPipeline TimeoutAsync(this IAsyncPipeline pipeline, TimeSpan timeout)
@@ -55,11 +55,11 @@ public static class TimeoutExtension
     }
 
     /// <summary>
-    /// Executes the specified synchronous pipeline with a timeout. If the pipeline does not complete within the given timeout, a failed <see cref="Result{T}"/> is returned.
+    /// Wraps the pipeline with a timeout, failing if it doesn't complete in time.
     /// </summary>
-    /// <typeparam name="T">The type of the value produced by the pipeline.</typeparam>
+    /// <typeparam name="T">The value type.</typeparam>
     /// <param name="pipeline">The pipeline to execute.</param>
-    /// <param name="timeout">The maximum duration to wait for the pipeline to complete. Must be positive.</param>
+    /// <param name="timeout">The maximum duration to wait. Must be positive.</param>
     /// <returns>A pipeline that enforces the specified timeout.</returns>
     /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="timeout"/> is less than or equal to <see cref="TimeSpan.Zero"/>.</exception>
     [DebuggerStepperBoundary]
@@ -79,12 +79,12 @@ public static class TimeoutExtension
     }
 
     /// <summary>
-    /// Executes the specified asynchronous pipeline with a timeout. If the pipeline does not complete within the given timeout, a failed <see cref="Result{T}"/> is returned.
+    /// Async version of <see cref="Timeout{T}(IPipeline{T}, TimeSpan)"/>.
     /// </summary>
-    /// <typeparam name="T">The type of the value produced by the pipeline.</typeparam>
+    /// <typeparam name="T">The value type.</typeparam>
     /// <param name="pipeline">The asynchronous pipeline to execute.</param>
-    /// <param name="timeout">The maximum duration to wait for the pipeline to complete. Must be positive.</param>
-    /// <returns>An asynchronous pipeline that enforces the specified timeout.</returns>
+    /// <param name="timeout">The maximum duration to wait. Must be positive.</param>
+    /// <returns>An async pipeline that enforces the specified timeout.</returns>
     /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="timeout"/> is less than or equal to <see cref="TimeSpan.Zero"/>.</exception>
     [DebuggerStepperBoundary]
     public static IAsyncPipeline<T> TimeoutAsync<T>(this IAsyncPipeline<T> pipeline, TimeSpan timeout)

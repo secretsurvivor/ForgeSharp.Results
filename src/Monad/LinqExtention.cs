@@ -4,14 +4,13 @@ using System.Diagnostics;
 namespace ForgeSharp.Results.Monad;
 
 /// <summary>
-/// Provides LINQ extension methods for composing and transforming <see cref="IPipeline{T}"/> and <see cref="IAsyncPipeline{T}"/> instances.
-/// These methods are intended to be used via LINQ query expressions to enable monadic and query-based workflows over pipelines.
+/// LINQ query syntax support for <see cref="IPipeline{T}"/> and <see cref="IAsyncPipeline{T}"/>.
 /// </summary>
 [EditorBrowsable(EditorBrowsableState.Never)]
 public static class LinqExtention
 {
     /// <summary>
-    /// Projects each element of a pipeline into a new form. Intended for use with LINQ <c>select</c> clauses over <see cref="IPipeline{T}"/>.
+    /// LINQ <c>select</c> support for sync pipelines.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never), DebuggerStepperBoundary]
     public static IPipeline<TResult> Select<T, TResult>(this IPipeline<T> pipeline, Func<T, TResult> selector)
@@ -25,7 +24,7 @@ public static class LinqExtention
     }
 
     /// <summary>
-    /// Filters the elements of a pipeline based on a predicate. Intended for use with LINQ <c>where</c> clauses over <see cref="IPipeline{T}"/>.
+    /// LINQ <c>where</c> support for sync pipelines.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never), DebuggerStepperBoundary]
     public static IPipeline<T> Where<T>(this IPipeline<T> pipeline, Func<T, bool> predicate)
@@ -44,7 +43,7 @@ public static class LinqExtention
     }
 
     /// <summary>
-    /// Projects each element of a pipeline to another pipeline and flattens the resulting pipelines into one. Intended for use with LINQ <c>from</c> and <c>select</c> clauses over <see cref="IPipeline{T}"/>.
+    /// LINQ <c>from...select</c> (SelectMany) support for sync pipelines.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never), DebuggerStepperBoundary]
     public static IPipeline<TResult> SelectMany<T, TIntermediate, TResult>(
@@ -73,7 +72,7 @@ public static class LinqExtention
     }
 
     /// <summary>
-    /// Projects each element of an asynchronous pipeline into a new form. Intended for use with LINQ <c>select</c> clauses over <see cref="IAsyncPipeline{T}"/>.
+    /// LINQ <c>select</c> support for async pipelines.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never), DebuggerStepperBoundary]
     public static IAsyncPipeline<TResult> Select<T, TResult>(this IAsyncPipeline<T> pipeline, Func<T, TResult> selector)
@@ -87,7 +86,7 @@ public static class LinqExtention
     }
 
     /// <summary>
-    /// Filters the elements of an asynchronous pipeline based on a predicate. Intended for use with LINQ <c>where</c> clauses over <see cref="IAsyncPipeline{T}"/>.
+    /// LINQ <c>where</c> support for async pipelines.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never), DebuggerStepperBoundary]
     public static IAsyncPipeline<T> Where<T>(this IAsyncPipeline<T> pipeline, Func<T, bool> predicate)
@@ -106,7 +105,7 @@ public static class LinqExtention
     }
 
     /// <summary>
-    /// Projects each element of an asynchronous pipeline to another asynchronous pipeline and flattens the resulting pipelines into one. Intended for use with LINQ <c>from</c> and <c>select</c> clauses over <see cref="IAsyncPipeline{T}"/>.
+    /// LINQ <c>from...select</c> (SelectMany) support for async pipelines.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never), DebuggerStepperBoundary]
     public static IAsyncPipeline<TResult> SelectMany<T, TIntermediate, TResult>(
@@ -135,7 +134,7 @@ public static class LinqExtention
     }
 
     /// <summary>
-    /// Supports mixing synchronous and asynchronous pipelines in LINQ query expressions. Projects each element of a pipeline to an asynchronous pipeline and flattens the result.
+    /// Mixed sync→async <c>SelectMany</c>.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never), DebuggerStepperBoundary]
     public static IAsyncPipeline<TResult> SelectMany<T, TIntermediate, TResult>(
@@ -164,7 +163,7 @@ public static class LinqExtention
     }
 
     /// <summary>
-    /// Supports mixing asynchronous and synchronous pipelines in LINQ query expressions. Projects each element of an asynchronous pipeline to a synchronous pipeline and flattens the result.
+    /// Mixed async→sync <c>SelectMany</c>.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never), DebuggerStepperBoundary]
     public static IAsyncPipeline<TResult> SelectMany<T, TIntermediate, TResult>(
@@ -193,7 +192,7 @@ public static class LinqExtention
     }
 
     /// <summary>
-    /// Supports advanced LINQ query expressions by allowing asynchronous selection of asynchronous pipelines.
+    /// Async <c>SelectMany</c> with async selector.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never), DebuggerStepperBoundary]
     public static IAsyncPipeline<TResult> SelectMany<T, TIntermediate, TResult>(
@@ -223,7 +222,7 @@ public static class LinqExtention
     }
 
     /// <summary>
-    /// Supports advanced LINQ query expressions by allowing asynchronous selection of synchronous pipelines.
+    /// Async <c>SelectMany</c> with async selector returning sync pipeline.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never), DebuggerStepperBoundary]
     public static IAsyncPipeline<TResult> SelectMany<T, TIntermediate, TResult>(
@@ -253,7 +252,7 @@ public static class LinqExtention
     }
 
     /// <summary>
-    /// Supports advanced LINQ query expressions by allowing synchronous selection of asynchronous pipelines.
+    /// Sync pipeline with async selector returning async pipeline.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never), DebuggerStepperBoundary]
     public static IAsyncPipeline<TResult> SelectMany<T, TIntermediate, TResult>(
@@ -283,7 +282,7 @@ public static class LinqExtention
     }
 
     /// <summary>
-    /// Supports advanced LINQ query expressions by allowing synchronous selection of synchronous pipelines asynchronously.
+    /// Sync pipeline with async selector returning sync pipeline.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never), DebuggerStepperBoundary]
     public static IAsyncPipeline<TResult> SelectMany<T, TIntermediate, TResult>(

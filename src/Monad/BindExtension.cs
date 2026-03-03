@@ -5,8 +5,7 @@ using System.Runtime.CompilerServices;
 namespace ForgeSharp.Results.Monad;
 
 /// <summary>
-/// Provides bind operators for <see cref="Result"/> and <see cref="Result{T}"/> which allow chaining
-/// operations that themselves return results, enabling monadic composition.
+/// Bind (flatMap) operators for <see cref="Result"/> and <see cref="Result{T}"/>.
 /// </summary>
 public static class BindExtension
 {
@@ -16,7 +15,7 @@ public static class BindExtension
     /// </summary>
     /// <param name="result">The result.</param>
     /// <param name="action">The action to bind.</param>
-    /// <returns>The result of the action if the input result is successful, otherwise the input result.</returns>
+    /// <returns>The action result on success, or the original failure.</returns>
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Result Bind(this Result result, Func<Result> action)
     {
@@ -29,13 +28,13 @@ public static class BindExtension
     }
 
     /// <summary>
-    /// Binds a result containing a value to a function that transforms the value into a new result.
+    /// Binds a result to a function that transforms the value into a new result.
     /// </summary>
-    /// <typeparam name="T">The type of the input value.</typeparam>
-    /// <typeparam name="TResult">The type of the result value.</typeparam>
+    /// <typeparam name="T">The input value type.</typeparam>
+    /// <typeparam name="TResult">The result type.</typeparam>
     /// <param name="result">The result.</param>
     /// <param name="action">The function to bind.</param>
-    /// <returns>The result of the function if the input result is successful, otherwise the forwarded failure.</returns>
+    /// <returns>The action result on success, or the forwarded failure.</returns>
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Result<TResult> Bind<T, TResult>(this Result<T> result, Func<T, Result<TResult>> action)
     {
@@ -48,14 +47,14 @@ public static class BindExtension
     }
 
     /// <summary>
-    /// Binds a result containing a value to a function that transforms the value into a new result with a custom error type.
+    /// Binds a result to a function that returns a new result with a custom error type.
     /// </summary>
-    /// <typeparam name="T">The type of the input value.</typeparam>
-    /// <typeparam name="TResult">The type of the result value.</typeparam>
-    /// <typeparam name="TError">The type of the custom error.</typeparam>
+    /// <typeparam name="T">The input value type.</typeparam>
+    /// <typeparam name="TResult">The result type.</typeparam>
+    /// <typeparam name="TError">The error type.</typeparam>
     /// <param name="result">The result.</param>
     /// <param name="action">The function to bind.</param>
-    /// <returns>The result of the function if the input result is successful, otherwise the forwarded error.</returns>
+    /// <returns>The action result on success, or the forwarded error.</returns>
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Result<TResult, TError> Bind<T, TResult, TError>(this Result<T, TError> result, Func<T, Result<TResult, TError>> action)
     {
@@ -70,11 +69,11 @@ public static class BindExtension
 
     #region Async Result
     /// <summary>
-    /// Asynchronously binds a task containing a result to an action that returns a new result.
+    /// Binds an awaited result to a sync action. See <see cref="Bind(Result, Func{Result})"/>.
     /// </summary>
     /// <param name="resultTask">The result task.</param>
     /// <param name="action">The action to bind.</param>
-    /// <returns>A task representing the asynchronous operation, containing the result of the action if the input result is successful, otherwise the input result.</returns>
+    /// <returns>The action result on success, or the original failure.</returns>
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Task<Result> BindAsync(this Task<Result> resultTask, Func<Result> action)
     {
@@ -99,13 +98,13 @@ public static class BindExtension
     }
 
     /// <summary>
-    /// Asynchronously binds a task containing a result with a value to a function that transforms the value into a new result.
+    /// Binds an awaited result to a sync function. See <see cref="Bind{T, TResult}(Result{T}, Func{T, Result{TResult}})"/>.
     /// </summary>
-    /// <typeparam name="T">The type of the input value.</typeparam>
-    /// <typeparam name="TResult">The type of the result value.</typeparam>
+    /// <typeparam name="T">The input value type.</typeparam>
+    /// <typeparam name="TResult">The result type.</typeparam>
     /// <param name="resultTask">The result task.</param>
     /// <param name="action">The function to bind.</param>
-    /// <returns>A task representing the asynchronous operation, containing the result of the function if the input result is successful, otherwise the forwarded failure.</returns>
+    /// <returns>The action result on success, or the forwarded failure.</returns>
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Task<Result<TResult>> BindAsync<T, TResult>(this Task<Result<T>> resultTask, Func<T, Result<TResult>> action)
     {
@@ -130,14 +129,14 @@ public static class BindExtension
     }
 
     /// <summary>
-    /// Asynchronously binds a task containing a result with a value to a function that transforms the value into a new result with a custom error type.
+    /// Binds an awaited result to a sync function with a custom error type.
     /// </summary>
-    /// <typeparam name="T">The type of the input value.</typeparam>
-    /// <typeparam name="TResult">The type of the result value.</typeparam>
-    /// <typeparam name="TError">The type of the custom error.</typeparam>
+    /// <typeparam name="T">The input value type.</typeparam>
+    /// <typeparam name="TResult">The result type.</typeparam>
+    /// <typeparam name="TError">The error type.</typeparam>
     /// <param name="resultTask">The result task.</param>
     /// <param name="action">The function to bind.</param>
-    /// <returns>A task representing the asynchronous operation, containing the result of the function if the input result is successful, otherwise the forwarded error.</returns>
+    /// <returns>The action result on success, or the forwarded error.</returns>
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Task<Result<TResult, TError>> BindAsync<T, TResult, TError>(this Task<Result<T, TError>> resultTask, Func<T, Result<TResult, TError>> action)
     {
@@ -164,11 +163,11 @@ public static class BindExtension
 
     #region Async Result and Parameter
     /// <summary>
-    /// Asynchronously binds a task containing a result to an async action that returns a new result.
+    /// Binds an awaited result to an async action.
     /// </summary>
     /// <param name="resultTask">The result task.</param>
     /// <param name="action">The async action to bind.</param>
-    /// <returns>A task representing the asynchronous operation, containing the result of the action if the input result is successful, otherwise the input result.</returns>
+    /// <returns>The action result on success, or the original failure.</returns>
     [DebuggerStepperBoundary]
     public static async Task<Result> BindAsync(this Task<Result> resultTask, Func<Task<Result>> action)
     {
@@ -183,13 +182,13 @@ public static class BindExtension
     }
 
     /// <summary>
-    /// Asynchronously binds a task containing a result with a value to an async function that transforms the value into a new result.
+    /// Binds an awaited result to an async function.
     /// </summary>
-    /// <typeparam name="T">The type of the input value.</typeparam>
-    /// <typeparam name="TResult">The type of the result value.</typeparam>
+    /// <typeparam name="T">The input value type.</typeparam>
+    /// <typeparam name="TResult">The result type.</typeparam>
     /// <param name="resultTask">The result task.</param>
     /// <param name="action">The async function to bind.</param>
-    /// <returns>A task representing the asynchronous operation, containing the result of the function if the input result is successful, otherwise the forwarded failure.</returns>
+    /// <returns>The action result on success, or the forwarded failure.</returns>
     [DebuggerStepperBoundary]
     public static async Task<Result<TResult>> BindAsync<T, TResult>(this Task<Result<T>> resultTask, Func<T, Task<Result<TResult>>> action)
     {
@@ -204,14 +203,14 @@ public static class BindExtension
     }
 
     /// <summary>
-    /// Asynchronously binds a task containing a result with a value to an async function that transforms the value into a new result with a custom error type.
+    /// Binds an awaited result to an async function with a custom error type.
     /// </summary>
-    /// <typeparam name="T">The type of the input value.</typeparam>
-    /// <typeparam name="TResult">The type of the result value.</typeparam>
-    /// <typeparam name="TError">The type of the custom error.</typeparam>
+    /// <typeparam name="T">The input value type.</typeparam>
+    /// <typeparam name="TResult">The result type.</typeparam>
+    /// <typeparam name="TError">The error type.</typeparam>
     /// <param name="resultTask">The result task.</param>
     /// <param name="action">The async function to bind.</param>
-    /// <returns>A task representing the asynchronous operation, containing the result of the function if the input result is successful, otherwise the forwarded error.</returns>
+    /// <returns>The action result on success, or the forwarded error.</returns>
     [DebuggerStepperBoundary]
     public static async Task<Result<TResult, TError>> BindAsync<T, TResult, TError>(this Task<Result<T, TError>> resultTask, Func<T, Task<Result<TResult, TError>>> action)
     {
@@ -228,11 +227,11 @@ public static class BindExtension
 
     #region Async Parameter
     /// <summary>
-    /// Asynchronously binds a synchronous result to an async action that returns a new result.
+    /// Binds a result to an async action.
     /// </summary>
     /// <param name="result">The result.</param>
     /// <param name="action">The async action to bind.</param>
-    /// <returns>A task representing the asynchronous operation, containing the result of the action if the input result is successful, otherwise the input result.</returns>
+    /// <returns>The action result on success, or the original failure.</returns>
     [DebuggerStepperBoundary]
     public static async Task<Result> BindAsync(this Result result, Func<Task<Result>> action)
     {
@@ -245,13 +244,13 @@ public static class BindExtension
     }
 
     /// <summary>
-    /// Asynchronously binds a synchronous result with a value to an async function that transforms the value into a new result.
+    /// Binds a result to an async function.
     /// </summary>
-    /// <typeparam name="T">The type of the input value.</typeparam>
-    /// <typeparam name="TResult">The type of the result value.</typeparam>
+    /// <typeparam name="T">The input value type.</typeparam>
+    /// <typeparam name="TResult">The result type.</typeparam>
     /// <param name="result">The result.</param>
     /// <param name="action">The async function to bind.</param>
-    /// <returns>A task representing the asynchronous operation, containing the result of the function if the input result is successful, otherwise the forwarded failure.</returns>
+    /// <returns>The action result on success, or the forwarded failure.</returns>
     [DebuggerStepperBoundary]
     public static async Task<Result<TResult>> BindAsync<T, TResult>(this Result<T> result, Func<T, Task<Result<TResult>>> action)
     {
@@ -264,14 +263,14 @@ public static class BindExtension
     }
 
     /// <summary>
-    /// Asynchronously binds a synchronous result with a value to an async function that transforms the value into a new result with a custom error type.
+    /// Binds a result to an async function with a custom error type.
     /// </summary>
-    /// <typeparam name="T">The type of the input value.</typeparam>
-    /// <typeparam name="TResult">The type of the result value.</typeparam>
-    /// <typeparam name="TError">The type of the custom error.</typeparam>
+    /// <typeparam name="T">The input value type.</typeparam>
+    /// <typeparam name="TResult">The result type.</typeparam>
+    /// <typeparam name="TError">The error type.</typeparam>
     /// <param name="result">The result.</param>
     /// <param name="action">The async function to bind.</param>
-    /// <returns>A task representing the asynchronous operation, containing the result of the function if the input result is successful, otherwise the forwarded error.</returns>
+    /// <returns>The action result on success, or the forwarded error.</returns>
     [DebuggerStepperBoundary]
     public static async Task<Result<TResult, TError>> BindAsync<T, TResult, TError>(this Result<T, TError> result, Func<T, Task<Result<TResult, TError>>> action)
     {

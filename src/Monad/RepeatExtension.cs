@@ -3,12 +3,12 @@
 namespace ForgeSharp.Results.Monad;
 
 /// <summary>
-/// Provides extension methods for repeating the execution of pipelines multiple times.
+/// Repeat operators for executing pipelines multiple times.
 /// </summary>
 public static class RepeatExtension
 {
     /// <summary>
-    /// Executes the specified synchronous pipeline a given number of times, yielding each <see cref="Result"/>.
+    /// Executes the pipeline <paramref name="count"/> times, yielding each result.
     /// </summary>
     /// <param name="pipeline">The pipeline to execute.</param>
     /// <param name="count">The number of times to execute the pipeline. Must be greater than 0.</param>
@@ -29,9 +29,9 @@ public static class RepeatExtension
     }
 
     /// <summary>
-    /// Executes the specified synchronous pipeline a given number of times, yielding each <see cref="Result{T}"/>.
+    /// Executes the pipeline <paramref name="count"/> times, yielding each result.
     /// </summary>
-    /// <typeparam name="T">The type of the value produced by the pipeline.</typeparam>
+    /// <typeparam name="T">The value type.</typeparam>
     /// <param name="pipeline">The pipeline to execute.</param>
     /// <param name="count">The number of times to execute the pipeline. Must be greater than 0.</param>
     /// <returns>An <see cref="IEnumerable{Result{T}}"/> containing the results of each execution.</returns>
@@ -53,7 +53,7 @@ public static class RepeatExtension
 #if NETSTANDARD2_1 || NETCOREAPP3_0_OR_GREATER || NET5_0_OR_GREATER
 
     /// <summary>
-    /// Asynchronously executes the specified pipeline a given number of times, yielding each <see cref="Result"/> as they complete.
+    /// Async version of Repeat.
     /// </summary>
     /// <param name="pipeline">The asynchronous pipeline to execute.</param>
     /// <param name="count">The number of times to execute the pipeline. Must be greater than 0.</param>
@@ -74,9 +74,9 @@ public static class RepeatExtension
     }
 
     /// <summary>
-    /// Asynchronously executes the specified pipeline a given number of times, yielding each <see cref="Result{T}"/> as they complete.
+    /// Async version of Repeat.
     /// </summary>
-    /// <typeparam name="T">The type of the value produced by the pipeline.</typeparam>
+    /// <typeparam name="T">The value type.</typeparam>
     /// <param name="pipeline">The asynchronous pipeline to execute.</param>
     /// <param name="count">The number of times to execute the pipeline. Must be greater than 0.</param>
     /// <returns>An <see cref="IAsyncEnumerable{Result{T}}"/> containing the results of each execution.</returns>
@@ -98,11 +98,11 @@ public static class RepeatExtension
 #else
 
     /// <summary>
-    /// Asynchronously executes the specified pipeline a given number of times, returning all <see cref="Result"/> objects as a collection.
+    /// Async version of Repeat.
     /// </summary>
     /// <param name="pipeline">The asynchronous pipeline to execute.</param>
     /// <param name="count">The number of times to execute the pipeline. Must be greater than 0.</param>
-    /// <returns>A task representing the asynchronous operation, with a collection of results.</returns>
+    /// <returns>The collected results.</returns>
     /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="count"/> is less than 1.</exception>
     [DebuggerStepperBoundary]
     public static async Task<IEnumerable<Result>> RepeatAsync(this IAsyncPipeline pipeline, int count)
@@ -123,12 +123,12 @@ public static class RepeatExtension
     }
 
     /// <summary>
-    /// Asynchronously executes the specified pipeline a given number of times, returning all <see cref="Result{T}"/> objects as a collection.
+    /// Async version of Repeat.
     /// </summary>
-    /// <typeparam name="T">The type of the value produced by the pipeline.</typeparam>
+    /// <typeparam name="T">The value type.</typeparam>
     /// <param name="pipeline">The asynchronous pipeline to execute.</param>
     /// <param name="count">The number of times to execute the pipeline. Must be greater than 0.</param>
-    /// <returns>A task representing the asynchronous operation, with a collection of results.</returns>
+    /// <returns>The collected results.</returns>
     /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="count"/> is less than 1.</exception>
     [DebuggerStepperBoundary]
     public static async Task<IEnumerable<Result<T>>> RepeatAsync<T>(this IAsyncPipeline<T> pipeline, int count)

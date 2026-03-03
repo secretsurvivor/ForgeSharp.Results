@@ -4,21 +4,18 @@ using System.Runtime.CompilerServices;
 namespace ForgeSharp.Results.Monad;
 
 /// <summary>
-/// Provides helpers to resolve collections of asynchronous <see cref="Result"/> producers
-/// (for example <see cref="Task{Result}"/> and <see cref="ValueTask{Result}"/>) into
-/// synchronous or asynchronous sequences. Useful for materializing or streaming the
-/// results as they complete.
+/// Resolve operators for awaiting collections of result tasks into sequences.
 /// </summary>
 public static class ResolveExtension
 {
 #if NETSTANDARD2_1 || NETCOREAPP3_0_OR_GREATER || NET5_0_OR_GREATER
 
     /// <summary>
-    /// Asynchronously resolves a sequence of <see cref="Task{Result}"/> to an <see cref="IAsyncEnumerable{Result}"/>.
+    /// Resolves a sequence of result tasks into an async enumerable.
     /// </summary>
     /// <param name="resultTasks">The sequence of result tasks.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous enumeration.</param>
-    /// <returns>An async enumerable of resolved <see cref="Result"/> objects.</returns>
+    /// <returns>The resolved results as an async stream.</returns>
     [DebuggerStepperBoundary]
     public static async IAsyncEnumerable<Result> ResolveAsync(this IEnumerable<Task<Result>> resultTasks, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
@@ -35,11 +32,11 @@ public static class ResolveExtension
     }
 
     /// <summary>
-    /// Asynchronously resolves a sequence of <see cref="ValueTask{Result}"/> to an <see cref="IAsyncEnumerable{Result}"/>.
+    /// Resolves a sequence of result tasks into an async enumerable.
     /// </summary>
     /// <param name="resultTasks">The sequence of result value tasks.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous enumeration.</param>
-    /// <returns>An async enumerable of resolved <see cref="Result"/> objects.</returns>
+    /// <returns>The resolved results as an async stream.</returns>
     [DebuggerStepperBoundary]
     public static async IAsyncEnumerable<Result> ResolveAsync(this IEnumerable<ValueTask<Result>> resultTasks, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
@@ -57,12 +54,12 @@ public static class ResolveExtension
     }
 
     /// <summary>
-    /// Asynchronously resolves a sequence of <see cref="Task{Result{T}}"/> to an <see cref="IAsyncEnumerable{Result{T}}"/>.
+    /// Resolves a sequence of result tasks into an async enumerable.
     /// </summary>
-    /// <typeparam name="T">The type of the value in the result.</typeparam>
+    /// <typeparam name="T">The value type.</typeparam>
     /// <param name="resultTasks">The sequence of result tasks.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous enumeration.</param>
-    /// <returns>An async enumerable of resolved <see cref="Result{T}"/> objects.</returns>
+    /// <returns>The resolved results as an async stream.</returns>
     [DebuggerStepperBoundary]
     public static async IAsyncEnumerable<Result<T>> ResolveAsync<T>(this IEnumerable<Task<Result<T>>> resultTasks, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
@@ -79,12 +76,12 @@ public static class ResolveExtension
     }
 
     /// <summary>
-    /// Asynchronously resolves a sequence of <see cref="ValueTask{Result{T}}"/> to an <see cref="IAsyncEnumerable{Result{T}}"/>.
+    /// Resolves a sequence of result tasks into an async enumerable.
     /// </summary>
-    /// <typeparam name="T">The type of the value in the result.</typeparam>
+    /// <typeparam name="T">The value type.</typeparam>
     /// <param name="resultTasks">The sequence of result value tasks.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous enumeration.</param>
-    /// <returns>An async enumerable of resolved <see cref="Result{T}"/> objects.</returns>
+    /// <returns>The resolved results as an async stream.</returns>
     [DebuggerStepperBoundary]
     public static async IAsyncEnumerable<Result<T>> ResolveAsync<T>(this IEnumerable<ValueTask<Result<T>>> resultTasks, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
@@ -104,10 +101,10 @@ public static class ResolveExtension
 #endif
 
     /// <summary>
-    /// Asynchronously resolves a sequence of <see cref="Task{Result}"/> to an <see cref="IEnumerable{Result}"/>.
+    /// Resolves a sequence of result tasks into a list.
     /// </summary>
     /// <param name="resultTasks">The sequence of result tasks.</param>
-    /// <returns>A task representing the asynchronous operation, with a collection of resolved <see cref="Result"/> objects.</returns>
+    /// <returns>The resolved results.</returns>
     [DebuggerStepperBoundary]
     public static async Task<IEnumerable<Result>> ResolveAsync(this IEnumerable<Task<Result>> resultTasks)
     {
@@ -132,11 +129,11 @@ public static class ResolveExtension
     }
 
     /// <summary>
-    /// Asynchronously resolves a sequence of <see cref="Task{Result{T}}"/> to an <see cref="IEnumerable{Result{T}}"/>.
+    /// Resolves a sequence of result tasks into a list.
     /// </summary>
-    /// <typeparam name="T">The type of the value in the result.</typeparam>
+    /// <typeparam name="T">The value type.</typeparam>
     /// <param name="resultTasks">The sequence of result tasks.</param>
-    /// <returns>A task representing the asynchronous operation, with a collection of resolved <see cref="Result{T}"/> objects.</returns>
+    /// <returns>The resolved results.</returns>
     [DebuggerStepperBoundary]
     public static async Task<IEnumerable<Result<T>>> ResolveAsync<T>(this IEnumerable<Task<Result<T>>> resultTasks)
     {

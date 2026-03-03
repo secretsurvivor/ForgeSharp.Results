@@ -4,14 +4,13 @@ using System.Runtime.CompilerServices;
 namespace ForgeSharp.Results.Monad.Options;
 
 /// <summary>
-/// Provides "tap" operators for <see cref="Options{T}"/> which allow running side-effecting actions
-/// when an option has a value while returning the original option unchanged.
+/// Tap operators for running side-effects on <see cref="Options{T}"/>.
 /// </summary>
 public static class OptionsTapExtension
 {
     #region Sync
     /// <summary>
-    /// Executes an action if the option has a value.
+    /// Runs a side-effect if the option has a value.
     /// </summary>
     /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="option">The option.</param>
@@ -31,7 +30,7 @@ public static class OptionsTapExtension
 
     #region Async Option
     /// <summary>
-    /// Executes an action if the awaited option has a value.
+    /// Awaits the option, then taps.
     /// </summary>
     /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="optionTask">The option task.</param>
@@ -45,7 +44,7 @@ public static class OptionsTapExtension
     }
 
     /// <summary>
-    /// Executes an asynchronous action if the awaited option has a value.
+    /// Awaits the option, then runs an async side-effect.
     /// </summary>
     /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="optionTask">The option task.</param>

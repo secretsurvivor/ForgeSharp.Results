@@ -4,17 +4,16 @@ using System.Runtime.CompilerServices;
 namespace ForgeSharp.Results.Monad.Options;
 
 /// <summary>
-/// Provides binding (flatMap) operators for <see cref="Options{T}"/> which allow chaining options
-/// while preserving the absence-of-value semantics throughout the chain.
+/// Bind (flatMap) operators for <see cref="Options{T}"/>.
 /// </summary>
 public static class OptionsBindExtension
 {
     #region Sync
     /// <summary>
-    /// Chains two options together, flattening the result.
+    /// Binds the option to a function that returns another option.
     /// </summary>
-    /// <typeparam name="T">The type of the input value.</typeparam>
-    /// <typeparam name="TResult">The type of the result value.</typeparam>
+    /// <typeparam name="T">The input type.</typeparam>
+    /// <typeparam name="TResult">The result type.</typeparam>
     /// <param name="option">The option containing a value.</param>
     /// <param name="func">The function that returns a new option based on the value.</param>
     /// <returns>The result of applying the function if the input option has a value, or <see cref="Options{T}.None()"/> otherwise.</returns>
@@ -32,10 +31,10 @@ public static class OptionsBindExtension
 
     #region Async Option
     /// <summary>
-    /// Chains an awaited option with a synchronous binding function.
+    /// Awaits the option, then binds.
     /// </summary>
-    /// <typeparam name="T">The type of the input value.</typeparam>
-    /// <typeparam name="TResult">The type of the result value.</typeparam>
+    /// <typeparam name="T">The input type.</typeparam>
+    /// <typeparam name="TResult">The result type.</typeparam>
     /// <param name="optionTask">The option task containing a value.</param>
     /// <param name="func">The function that returns a new option based on the value.</param>
     /// <returns>The result of applying the function as a task, or <see cref="Options{T}.None()"/> if the input option has no value.</returns>
@@ -47,10 +46,10 @@ public static class OptionsBindExtension
     }
 
     /// <summary>
-    /// Chains an awaited option with an asynchronous binding function.
+    /// Awaits the option, then binds with an async function.
     /// </summary>
-    /// <typeparam name="T">The type of the input value.</typeparam>
-    /// <typeparam name="TResult">The type of the result value.</typeparam>
+    /// <typeparam name="T">The input type.</typeparam>
+    /// <typeparam name="TResult">The result type.</typeparam>
     /// <param name="optionTask">The option task containing a value.</param>
     /// <param name="funcAsync">The asynchronous function that returns a new option based on the value.</param>
     /// <returns>The result of applying the function as a task, or <see cref="Options{T}.None()"/> if the input option has no value.</returns>

@@ -5,8 +5,7 @@ using System.Runtime.CompilerServices;
 namespace ForgeSharp.Results.Monad;
 
 /// <summary>
-/// Provides LINQ-like projection helpers for <see cref="EnumerableResult"/> and <see cref="EnumerableResult{T}"/>.
-/// The projection is performed lazily as the returned <see cref="IEnumerable{T}"/> is iterated.
+/// Projection operators for <see cref="EnumerableResult"/> and <see cref="Result{T}">Result&lt;IEnumerable&gt;</see>. Projections are lazy.
 /// </summary>
 public static class SelectExtension
 {
@@ -20,9 +19,6 @@ public static class SelectExtension
     /// An <see cref="IEnumerable{T}"/> that yields the projected values in the same order as the source results.
     /// Enumeration is lazy and will invoke <paramref name="selector"/> per element when iterated.
     /// </returns>
-    /// <remarks>
-    /// The method does not perform argument validation — providing a <c>null</c> <paramref name="selector"/> will cause an exception when the returned sequence is enumerated.
-    /// </remarks>
     public static IEnumerable<T> Select<T>(this EnumerableResult enumerableResult, Func<Result, T> selector)
     {
         var results = enumerableResult._results;
@@ -44,9 +40,6 @@ public static class SelectExtension
     /// An <see cref="IEnumerable{TResult}"/> that yields the projected values in the same order as the source results.
     /// Enumeration is lazy and will invoke <paramref name="selector"/> per element when iterated.
     /// </returns>
-    /// <remarks>
-    /// The method does not perform argument validation — providing a <c>null</c> <paramref name="selector"/> will cause an exception when the returned sequence is enumerated.
-    /// </remarks>
     public static IEnumerable<TResult> Select<T, TResult>(this EnumerableResult<T> enumerableResult, Func<Result<T>, TResult> selector)
     {
         var results = enumerableResult._results;
@@ -58,13 +51,13 @@ public static class SelectExtension
     }
 
     /// <summary>
-    /// Selects the values of a successful result sequence to a new type.
+    /// Projects each value in the sequence on success.
     /// </summary>
-    /// <typeparam name="T">The type of the input values.</typeparam>
-    /// <typeparam name="TResult">The type of the result values.</typeparam>
+    /// <typeparam name="T">The input type.</typeparam>
+    /// <typeparam name="TResult">The result type.</typeparam>
     /// <param name="result">The result containing a sequence of values.</param>
     /// <param name="func">The selection function.</param>
-    /// <returns>A new result with selected values.</returns>
+    /// <returns>The projected result.</returns>
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Result<IEnumerable<TResult>> Select<T, TResult>(this Result<IEnumerable<T>> result, Func<T, TResult> func)
     {
@@ -77,13 +70,13 @@ public static class SelectExtension
     }
 
     /// <summary>
-    /// Selects the values of a successful awaited result sequence to a new type.
+    /// Async version of Select.
     /// </summary>
-    /// <typeparam name="T">The type of the input values.</typeparam>
-    /// <typeparam name="TResult">The type of the result values.</typeparam>
+    /// <typeparam name="T">The input type.</typeparam>
+    /// <typeparam name="TResult">The result type.</typeparam>
     /// <param name="resultTask">The result task containing a sequence of values.</param>
     /// <param name="func">The selection function.</param>
-    /// <returns>A new result with selected values as a task.</returns>
+    /// <returns>The projected result.</returns>
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Task<Result<IEnumerable<TResult>>> SelectAsync<T, TResult>(this Task<Result<IEnumerable<T>>> resultTask, Func<T, TResult> func)
     {
@@ -108,14 +101,14 @@ public static class SelectExtension
     }
 
     /// <summary>
-    /// Selects the values of a successful result sequence to a new type.
+    /// Projects each value in the sequence on success.
     /// </summary>
-    /// <typeparam name="T">The type of the input values.</typeparam>
-    /// <typeparam name="TResult">The type of the result values.</typeparam>
-    /// <typeparam name="TError">The type of the error.</typeparam>
+    /// <typeparam name="T">The input type.</typeparam>
+    /// <typeparam name="TResult">The result type.</typeparam>
+    /// <typeparam name="TError">The error type.</typeparam>
     /// <param name="result">The result containing a sequence of values.</param>
     /// <param name="func">The selection function.</param>
-    /// <returns>A new result with selected values.</returns>
+    /// <returns>The projected result.</returns>
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Result<IEnumerable<TResult>, TError> Select<T, TResult, TError>(this Result<IEnumerable<T>, TError> result, Func<T, TResult> func)
     {
@@ -128,14 +121,14 @@ public static class SelectExtension
     }
 
     /// <summary>
-    /// Selects the values of a successful awaited result sequence to a new type.
+    /// Async version of Select.
     /// </summary>
-    /// <typeparam name="T">The type of the input values.</typeparam>
-    /// <typeparam name="TResult">The type of the result values.</typeparam>
-    /// <typeparam name="TError">The type of the error.</typeparam>
+    /// <typeparam name="T">The input type.</typeparam>
+    /// <typeparam name="TResult">The result type.</typeparam>
+    /// <typeparam name="TError">The error type.</typeparam>
     /// <param name="resultTask">The result task containing a sequence of values.</param>
     /// <param name="func">The selection function.</param>
-    /// <returns>A new result with selected values as a task.</returns>
+    /// <returns>The projected result.</returns>
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Task<Result<IEnumerable<TResult>, TError>> SelectAsync<T, TResult, TError>(this Task<Result<IEnumerable<T>, TError>> resultTask, Func<T, TResult> func)
     {
@@ -162,13 +155,13 @@ public static class SelectExtension
 #if NETSTANDARD2_1_OR_GREATER || NET6_0_OR_GREATER
 
     /// <summary>
-    /// Selects the values of a successful awaited result sequence to a new type using a ValueTask.
+    /// ValueTask overload of Select.
     /// </summary>
-    /// <typeparam name="T">The type of the input values.</typeparam>
-    /// <typeparam name="TResult">The type of the result values.</typeparam>
+    /// <typeparam name="T">The input type.</typeparam>
+    /// <typeparam name="TResult">The result type.</typeparam>
     /// <param name="resultTask">The result value task containing a sequence of values.</param>
     /// <param name="func">The selection function.</param>
-    /// <returns>A new result with selected values as a value task.</returns>
+    /// <returns>The projected result.</returns>
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ValueTask<Result<IEnumerable<TResult>>> SelectAsync<T, TResult>(this ValueTask<Result<IEnumerable<T>>> resultTask, Func<T, TResult> func)
     {

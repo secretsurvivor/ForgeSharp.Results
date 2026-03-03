@@ -5,14 +5,13 @@ using System.Runtime.CompilerServices;
 namespace ForgeSharp.Results.Monad;
 
 /// <summary>
-/// Provides "tap" operators for <see cref="Result"/> and <see cref="Result{T}"/> which allow running
-/// side-effecting actions when a result is successful while returning the original result unchanged.
+/// Tap operators for running side-effects on success without changing the result.
 /// </summary>
 public static class TapExtension
 {
     #region Sync
     /// <summary>
-    /// Executes an action if the result is successful.
+    /// Runs a side-effect on success.
     /// </summary>
     /// <param name="result">The result.</param>
     /// <param name="action">The action to execute.</param>
@@ -29,9 +28,9 @@ public static class TapExtension
     }
 
     /// <summary>
-    /// Executes an action if the result is successful.
+    /// Runs a side-effect with the value on success.
     /// </summary>
-    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <typeparam name="T">The value type.</typeparam>
     /// <param name="result">The result.</param>
     /// <param name="action">The action to execute.</param>
     /// <returns>The original result.</returns>
@@ -47,10 +46,10 @@ public static class TapExtension
     }
 
     /// <summary>
-    /// Executes an action if the result is successful.
+    /// Runs a side-effect with the value of a custom-error result on success.
     /// </summary>
-    /// <typeparam name="T">The type of the value.</typeparam>
-    /// <typeparam name="TError">The type of the custom error.</typeparam>
+    /// <typeparam name="T">The value type.</typeparam>
+    /// <typeparam name="TError">The error type.</typeparam>
     /// <param name="result">The result.</param>
     /// <param name="action">The action to execute.</param>
     /// <returns>The original result.</returns>
@@ -68,11 +67,11 @@ public static class TapExtension
 
     #region Async Parameter
     /// <summary>
-    /// Executes an asynchronous action if the result is successful.
+    /// Async version of the corresponding Tap overload.
     /// </summary>
     /// <param name="result">The result.</param>
     /// <param name="action">The asynchronous action to execute.</param>
-    /// <returns>The original result as a task.</returns>
+    /// <returns>The original result.</returns>
     [DebuggerStepperBoundary]
     public static async Task<Result> TapAsync(this Result result, Func<Task> action)
     {
@@ -85,12 +84,12 @@ public static class TapExtension
     }
 
     /// <summary>
-    /// Executes an asynchronous action if the result is successful.
+    /// Async version of the corresponding Tap overload.
     /// </summary>
-    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <typeparam name="T">The value type.</typeparam>
     /// <param name="result">The result.</param>
     /// <param name="action">The asynchronous action to execute.</param>
-    /// <returns>The original result as a task.</returns>
+    /// <returns>The original result.</returns>
     [DebuggerStepperBoundary]
     public static async Task<Result<T>> TapAsync<T>(this Result<T> result, Func<T, Task> action)
     {
@@ -102,15 +101,15 @@ public static class TapExtension
         return result;
     }
 
-    [DebuggerStepperBoundary]
     /// <summary>
-    /// Executes an asynchronous action if the result is successful.
+    /// Async version of the corresponding Tap overload.
     /// </summary>
-    /// <typeparam name="T">The type of the value.</typeparam>
-    /// <typeparam name="TError">The type of the custom error.</typeparam>
+    /// <typeparam name="T">The value type.</typeparam>
+    /// <typeparam name="TError">The error type.</typeparam>
     /// <param name="result">The result.</param>
     /// <param name="action">The asynchronous action to execute.</param>
-    /// <returns>The original result as a task.</returns>
+    /// <returns>The original result.</returns>
+    [DebuggerStepperBoundary]
     public static async Task<Result<T, TError>> TapAsync<T, TError>(this Result<T, TError> result, Func<T, Task> action)
     {
         if (result.IsSuccess)
@@ -124,11 +123,11 @@ public static class TapExtension
 
     #region Async Result
     /// <summary>
-    /// Executes an action if the awaited result is successful.
+    /// Awaits the result, then taps on success.
     /// </summary>
     /// <param name="resultTask">The result task.</param>
     /// <param name="action">The action to execute.</param>
-    /// <returns>The original result as a task.</returns>
+    /// <returns>The original result.</returns>
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Task<Result> TapAsync(this Task<Result> resultTask, Action action)
     {
@@ -153,12 +152,12 @@ public static class TapExtension
     }
 
     /// <summary>
-    /// Executes an action if the awaited result is successful.
+    /// Awaits the result, then taps on success.
     /// </summary>
-    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <typeparam name="T">The value type.</typeparam>
     /// <param name="resultTask">The result task.</param>
     /// <param name="action">The action to execute.</param>
-    /// <returns>The original result as a task.</returns>
+    /// <returns>The original result.</returns>
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Task<Result<T>> TapAsync<T>(this Task<Result<T>> resultTask, Action<T> action)
     {
@@ -183,13 +182,13 @@ public static class TapExtension
     }
 
     /// <summary>
-    /// Executes an action if the awaited result is successful.
+    /// Awaits the result, then taps on success.
     /// </summary>
-    /// <typeparam name="T">The type of the value.</typeparam>
-    /// <typeparam name="TError">The type of the custom error.</typeparam>
+    /// <typeparam name="T">The value type.</typeparam>
+    /// <typeparam name="TError">The error type.</typeparam>
     /// <param name="resultTask">The result task.</param>
     /// <param name="action">The action to execute.</param>
-    /// <returns>The original result as a task.</returns>
+    /// <returns>The original result.</returns>
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Task<Result<T, TError>> TapAsync<T, TError>(this Task<Result<T, TError>> resultTask, Action<T> action)
     {
@@ -216,11 +215,11 @@ public static class TapExtension
 
     #region Async Result and Parameter
     /// <summary>
-    /// Executes an asynchronous action if the awaited result is successful.
+    /// Awaits the result, then runs the async side-effect on success.
     /// </summary>
     /// <param name="resultTask">The result task.</param>
     /// <param name="action">The asynchronous action to execute.</param>
-    /// <returns>The original result as a task.</returns>
+    /// <returns>The original result.</returns>
     [DebuggerStepperBoundary]
     public static async Task<Result> TapAsync(this Task<Result> resultTask, Func<Task> action)
     {
@@ -235,12 +234,12 @@ public static class TapExtension
     }
 
     /// <summary>
-    /// Executes an asynchronous action if the awaited result is successful.
+    /// Awaits the result, then runs the async side-effect on success.
     /// </summary>
-    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <typeparam name="T">The value type.</typeparam>
     /// <param name="resultTask">The result task.</param>
     /// <param name="action">The asynchronous action to execute.</param>
-    /// <returns>The original result as a task.</returns>
+    /// <returns>The original result.</returns>
     [DebuggerStepperBoundary]
     public static async Task<Result<T>> TapAsync<T>(this Task<Result<T>> resultTask, Func<T, Task> action)
     {
@@ -255,13 +254,13 @@ public static class TapExtension
     }
 
     /// <summary>
-    /// Executes an asynchronous action if the awaited result is successful.
+    /// Awaits the result, then runs the async side-effect on success.
     /// </summary>
-    /// <typeparam name="T">The type of the value.</typeparam>
-    /// <typeparam name="TError">The type of the custom error.</typeparam>
+    /// <typeparam name="T">The value type.</typeparam>
+    /// <typeparam name="TError">The error type.</typeparam>
     /// <param name="resultTask">The result task.</param>
     /// <param name="action">The asynchronous action to execute.</param>
-    /// <returns>The original result as a task.</returns>
+    /// <returns>The original result.</returns>
     [DebuggerStepperBoundary]
     public static async Task<Result<T, TError>> TapAsync<T, TError>(this Task<Result<T, TError>> resultTask, Func<T, Task> action)
     {
@@ -279,11 +278,11 @@ public static class TapExtension
 #if NETSTANDARD2_1_OR_GREATER || NET6_0_OR_GREATER
 
     /// <summary>
-    /// Executes an asynchronous ValueTask action if the result is successful.
+    /// ValueTask overload of the corresponding Tap.
     /// </summary>
     /// <param name="result">The result.</param>
     /// <param name="action">The asynchronous ValueTask action to execute.</param>
-    /// <returns>The original result as a Task.</returns>
+    /// <returns>The original result.</returns>
     [DebuggerStepperBoundary]
     public static async Task<Result> TapAsync(this Result result, Func<ValueTask> action)
     {
@@ -296,12 +295,12 @@ public static class TapExtension
     }
 
     /// <summary>
-    /// Executes an asynchronous ValueTask action if the result is successful.
+    /// ValueTask overload of the corresponding Tap.
     /// </summary>
-    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <typeparam name="T">The value type.</typeparam>
     /// <param name="result">The result.</param>
     /// <param name="action">The asynchronous ValueTask action to execute.</param>
-    /// <returns>The original result as a ValueTask.</returns>
+    /// <returns>The original result.</returns>
     [DebuggerStepperBoundary]
     public static async ValueTask<Result<T>> TapAsync<T>(this Result<T> result, Func<T, ValueTask> action)
     {
@@ -314,11 +313,11 @@ public static class TapExtension
     }
 
     /// <summary>
-    /// Executes an action if the awaited ValueTask result is successful.
+    /// ValueTask overload of the corresponding Tap.
     /// </summary>
     /// <param name="resultTask">The ValueTask result.</param>
     /// <param name="action">The action to execute.</param>
-    /// <returns>The original result as a ValueTask.</returns>
+    /// <returns>The original result.</returns>
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ValueTask<Result> TapAsync(this ValueTask<Result> resultTask, Action action)
     {
@@ -343,12 +342,12 @@ public static class TapExtension
     }
 
     /// <summary>
-    /// Executes an action if the awaited ValueTask result is successful.
+    /// ValueTask overload of the corresponding Tap.
     /// </summary>
-    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <typeparam name="T">The value type.</typeparam>
     /// <param name="resultTask">The ValueTask result.</param>
     /// <param name="action">The action to execute.</param>
-    /// <returns>The original result as a ValueTask.</returns>
+    /// <returns>The original result.</returns>
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ValueTask<Result<T>> TapAsync<T>(this ValueTask<Result<T>> resultTask, Action<T> action)
     {
@@ -373,11 +372,11 @@ public static class TapExtension
     }
 
     /// <summary>
-    /// Executes an asynchronous ValueTask action if the awaited ValueTask result is successful.
+    /// ValueTask overload of the corresponding Tap.
     /// </summary>
     /// <param name="resultTask">The ValueTask result.</param>
     /// <param name="action">The asynchronous ValueTask action to execute.</param>
-    /// <returns>The original result as a ValueTask.</returns>
+    /// <returns>The original result.</returns>
     [DebuggerStepperBoundary]
     public static async ValueTask<Result> TapAsync(this ValueTask<Result> resultTask, Func<ValueTask> action)
     {
@@ -392,11 +391,11 @@ public static class TapExtension
     }
 
     /// <summary>
-    /// Executes an asynchronous Task action if the awaited ValueTask result is successful.
+    /// ValueTask overload of the corresponding Tap.
     /// </summary>
     /// <param name="resultTask">The ValueTask result.</param>
     /// <param name="action">The asynchronous Task action to execute.</param>
-    /// <returns>The original result as a Task.</returns>
+    /// <returns>The original result.</returns>
     [DebuggerStepperBoundary]
     public static async Task<Result> TapAsync(this ValueTask<Result> resultTask, Func<Task> action)
     {
@@ -411,12 +410,12 @@ public static class TapExtension
     }
 
     /// <summary>
-    /// Executes an asynchronous ValueTask action if the awaited ValueTask result is successful.
+    /// ValueTask overload of the corresponding Tap.
     /// </summary>
-    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <typeparam name="T">The value type.</typeparam>
     /// <param name="resultTask">The ValueTask result.</param>
     /// <param name="action">The asynchronous ValueTask action to execute.</param>
-    /// <returns>The original result as a ValueTask.</returns>
+    /// <returns>The original result.</returns>
     [DebuggerStepperBoundary]
     public static async ValueTask<Result<T>> TapAsync<T>(this ValueTask<Result<T>> resultTask, Func<T, ValueTask> action)
     {
@@ -431,12 +430,12 @@ public static class TapExtension
     }
 
     /// <summary>
-    /// Executes an asynchronous Task action if the awaited ValueTask result is successful.
+    /// ValueTask overload of the corresponding Tap.
     /// </summary>
-    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <typeparam name="T">The value type.</typeparam>
     /// <param name="resultTask">The ValueTask result.</param>
     /// <param name="action">The asynchronous Task action to execute.</param>
-    /// <returns>The original result as a Task.</returns>
+    /// <returns>The original result.</returns>
     [DebuggerStepperBoundary]
     public static async Task<Result<T>> TapAsync<T>(this ValueTask<Result<T>> resultTask, Func<T, Task> action)
     {

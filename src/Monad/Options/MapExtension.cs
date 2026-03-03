@@ -4,16 +4,15 @@ using System.Runtime.CompilerServices;
 namespace ForgeSharp.Results.Monad.Options;
 
 /// <summary>
-/// Provides mapping helpers that transform the value inside a successful <see cref="Options{T}"/> option
-/// into a different form while preserving the absence-of-value semantics.
+/// Map operators for <see cref="Options{T}"/>.
 /// </summary>
 public static class OptionsMapExtension
 {
     /// <summary>
-    /// Maps the value of an option to a new type.
+    /// Transforms the value if present.
     /// </summary>
-    /// <typeparam name="T">The type of the input value.</typeparam>
-    /// <typeparam name="TResult">The type of the result value.</typeparam>
+    /// <typeparam name="T">The input type.</typeparam>
+    /// <typeparam name="TResult">The result type.</typeparam>
     /// <param name="option">The option containing a value.</param>
     /// <param name="func">The mapping function to apply if the option has a value.</param>
     /// <returns>A new option with the mapped value, or <see cref="Options{T}.None()"/> if the input option has no value.</returns>
@@ -29,10 +28,10 @@ public static class OptionsMapExtension
     }
 
     /// <summary>
-    /// Transforms the value of an awaited option to a new type.
+    /// Awaits the option, then maps.
     /// </summary>
-    /// <typeparam name="T">The type of the input value.</typeparam>
-    /// <typeparam name="TResult">The type of the result value.</typeparam>
+    /// <typeparam name="T">The input type.</typeparam>
+    /// <typeparam name="TResult">The result type.</typeparam>
     /// <param name="optionTask">The option task containing a value.</param>
     /// <param name="func">The transformation function to apply if the option has a value.</param>
     /// <returns>A new option with the transformed value as a task, or <see cref="Options{T}.None()"/> if the input option has no value.</returns>
@@ -44,10 +43,10 @@ public static class OptionsMapExtension
     }
 
     /// <summary>
-    /// Transforms the value of an awaited option to a new type using an asynchronous transformation function.
+    /// Awaits the option, then maps with an async function.
     /// </summary>
-    /// <typeparam name="T">The type of the input value.</typeparam>
-    /// <typeparam name="TResult">The type of the result value.</typeparam>
+    /// <typeparam name="T">The input type.</typeparam>
+    /// <typeparam name="TResult">The result type.</typeparam>
     /// <param name="optionTask">The option task containing a value.</param>
     /// <param name="funcAsync">The asynchronous transformation function to apply if the option has a value.</param>
     /// <returns>A new option with the transformed value as a task, or <see cref="Options{T}.None()"/> if the input option has no value.</returns>

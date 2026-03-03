@@ -5,19 +5,15 @@ using System.Runtime.CompilerServices;
 namespace ForgeSharp.Results.Monad;
 
 /// <summary>
-/// Provides helpers to "flatten" nested <see cref="Result"/> and sequences of <see cref="Result"/> into
-/// a single <see cref="Result"/> or <see cref="Result{T}"/>. Useful for composing operations that may produce
-/// nested results or collections of results.
+/// Flatten operators for unwrapping nested results and collapsing result sequences.
 /// </summary>
 public static class FlattenExtension
 {
     /// <summary>
-    /// Flattens a nested non-generic <see cref="Result"/> contained inside a <see cref="Result"/> to a single <see cref="Result"/>.
+    /// Unwraps a nested <see cref="Result{Result}"/> into a single <see cref="Result"/>.
     /// </summary>
     /// <param name="result">The nested result to flatten.</param>
-    /// <returns>
-    /// If <paramref name="result"/> is successful, returns the inner <see cref="Result"/> value; otherwise forwards the failure.
-    /// </returns>
+    /// <returns>The inner result on success; otherwise the outer failure.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Result Flatten(this Result<Result> result)
     {
@@ -30,11 +26,11 @@ public static class FlattenExtension
     }
 
     /// <summary>
-    /// Flattens a nested <see cref="Result{T}"/> inside a <see cref="Result{Result{T}}"/> to a single <see cref="Result{T}"/>.
+    /// Unwraps a nested <see cref="Result{Result{T}}"/> into a single <see cref="Result{T}"/>.
     /// </summary>
-    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <typeparam name="T">The value type.</typeparam>
     /// <param name="result">The nested result.</param>
-    /// <returns>The flattened result.</returns>
+    /// <returns>The inner result on success; otherwise the outer failure.</returns>
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Result<T> Flatten<T>(this Result<Result<T>> result)
     {
@@ -47,11 +43,11 @@ public static class FlattenExtension
     }
 
     /// <summary>
-    /// Asynchronously flattens a nested <see cref="Result{T}"/> inside a <see cref="Result{Result{T}}"/> to a single <see cref="Result{T}"/>.
+    /// Async version of <see cref="Flatten{T}(Result{Result{T}})"/>.
     /// </summary>
-    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <typeparam name="T">The value type.</typeparam>
     /// <param name="resultTask">The task containing the nested result.</param>
-    /// <returns>The flattened result as a task.</returns>
+    /// <returns>The inner result on success; otherwise the outer failure.</returns>
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Task<Result<T>> FlattenAsync<T>(this Task<Result<Result<T>>> resultTask)
     {
@@ -76,10 +72,10 @@ public static class FlattenExtension
     }
 
     /// <summary>
-    /// Asynchronously flattens a nested <see cref="Result"/> inside a <see cref="Result{Result}"/> to a single <see cref="Result"/>.
+    /// Async version of <see cref="Flatten(Result{Result})"/>.
     /// </summary>
     /// <param name="resultTask">The task containing the nested result.</param>
-    /// <returns>The flattened result as a task.</returns>
+    /// <returns>The inner result on success; otherwise the outer failure.</returns>
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Task<Result> FlattenAsync(this Task<Result<Result>> resultTask)
     {
@@ -104,10 +100,10 @@ public static class FlattenExtension
     }
 
     /// <summary>
-    /// Flattens a sequence of <see cref="Result"/> objects, returning the first failed result or a successful result if all are successful.
+    /// Collapses a sequence of <see cref="Result"/> into a single result.
     /// </summary>
     /// <param name="results">The sequence of results.</param>
-    /// <returns>The first failed result, or a successful result if all are successful.</returns>
+    /// <returns>The first failure, or success if all passed.</returns>
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Result Flatten(this IEnumerable<Result> results)
     {
@@ -120,11 +116,11 @@ public static class FlattenExtension
     }
 
     /// <summary>
-    /// Asynchronously flattens a sequence of <see cref="Result"/> objects, returning the first failed result or a successful result if all are successful.
+    /// Async version of <see cref="Flatten(IEnumerable{Result})"/>.
     /// </summary>
-    /// <typeparam name="T">The type of the value (unused).</typeparam>
+    /// <typeparam name="T">Unused – required by the type system.</typeparam>
     /// <param name="resultTask">The task containing the sequence of results.</param>
-    /// <returns>The first failed result, or a successful result if all are successful, as a task.</returns>
+    /// <returns>The first failure, or success if all passed.</returns>
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Task<Result> FlattenAsync<T>(this Task<IEnumerable<Result>> resultTask)
     {
@@ -151,11 +147,11 @@ public static class FlattenExtension
 #if NETSTANDARD2_1_OR_GREATER || NET6_0_OR_GREATER
 
     /// <summary>
-    /// Asynchronously flattens a nested <see cref="Result{T}"/> inside a <see cref="Result{Result{T}}"/> to a single <see cref="Result{T}"/> using a ValueTask.
+    /// ValueTask overload of <see cref="FlattenAsync{T}(Task{Result{Result{T}}})"/>.
     /// </summary>
-    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <typeparam name="T">The value type.</typeparam>
     /// <param name="resultTask">The value task containing the nested result.</param>
-    /// <returns>The flattened result as a value task.</returns>
+    /// <returns>The inner result on success; otherwise the outer failure.</returns>
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ValueTask<Result<T>> FlattenAsync<T>(this ValueTask<Result<Result<T>>> resultTask)
     {
@@ -180,10 +176,10 @@ public static class FlattenExtension
     }
 
     /// <summary>
-    /// Asynchronously flattens a nested <see cref="Result"/> inside a <see cref="Result{Result}"/> to a single <see cref="Result"/> using a ValueTask.
+    /// ValueTask overload of <see cref="FlattenAsync(Task{Result{Result}})"/>.
     /// </summary>
     /// <param name="resultTask">The value task containing the nested result.</param>
-    /// <returns>The flattened result as a value task.</returns>
+    /// <returns>The inner result on success; otherwise the outer failure.</returns>
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ValueTask<Result> FlattenAsync(this ValueTask<Result<Result>> resultTask)
     {
@@ -208,11 +204,11 @@ public static class FlattenExtension
     }
 
     /// <summary>
-    /// Asynchronously flattens a sequence of <see cref="Result"/> objects, returning the first failed result or a successful result if all are successful, using a ValueTask.
+    /// ValueTask overload of <see cref="FlattenAsync{T}(Task{IEnumerable{Result}})"/>.
     /// </summary>
-    /// <typeparam name="T">The type of the value (unused).</typeparam>
+    /// <typeparam name="T">Unused – required by the type system.</typeparam>
     /// <param name="resultTask">The value task containing the sequence of results.</param>
-    /// <returns>The first failed result, or a successful result if all are successful, as a value task.</returns>
+    /// <returns>The first failure, or success if all passed.</returns>
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ValueTask<Result> FlattenAsync<T>(this ValueTask<IEnumerable<Result>> resultTask)
     {
@@ -237,10 +233,10 @@ public static class FlattenExtension
     }
 
     /// <summary>
-    /// Asynchronously flattens a sequence of <see cref="Result"/> objects from an <see cref="IAsyncEnumerable{Result}"/>, returning the first failed result or a successful result if all are successful.
+    /// Collapses an async sequence of <see cref="Result"/> into a single result.
     /// </summary>
     /// <param name="results">The asynchronous sequence of results.</param>
-    /// <returns>A task representing the asynchronous operation, with the first failed result or a successful result if all are successful.</returns>
+    /// <returns>The first failure, or success if all passed.</returns>
     [DebuggerStepperBoundary]
     public static async Task<Result> FlattenAsync(this IAsyncEnumerable<Result> results)
     {

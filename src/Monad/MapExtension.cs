@@ -5,19 +5,18 @@ using System.Runtime.CompilerServices;
 namespace ForgeSharp.Results.Monad;
 
 /// <summary>
-/// Provides mapping operators that execute transformations when a <see cref="Result"/> or <see cref="Result{T}"/> is successful.
-/// These methods return new <see cref="Result"/> instances while forwarding failures unchanged.
+/// Map operators for transforming result values, forwarding failures unchanged.
 /// </summary>
 public static class MapExtension
 {
     #region Sync
     /// <summary>
-    /// Executes a function if the result is successful, otherwise forwards the failure.
+    /// Maps a non-generic success into a typed result.
     /// </summary>
-    /// <typeparam name="TResult">The type of the result value.</typeparam>
+    /// <typeparam name="TResult">The result type.</typeparam>
     /// <param name="result">The result.</param>
     /// <param name="func">The function to execute.</param>
-    /// <returns>A new result.</returns>
+    /// <returns>The mapped result.</returns>
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Result<TResult> Map<TResult>(this Result result, Func<TResult> func)
     {
@@ -30,13 +29,13 @@ public static class MapExtension
     }
 
     /// <summary>
-    /// Executes a function if the result is successful, otherwise forwards the failure.
+    /// Transforms the value on success, forwarding failures.
     /// </summary>
-    /// <typeparam name="T">The type of the input value.</typeparam>
-    /// <typeparam name="TResult">The type of the result value.</typeparam>
+    /// <typeparam name="T">The input type.</typeparam>
+    /// <typeparam name="TResult">The result type.</typeparam>
     /// <param name="result">The result.</param>
     /// <param name="func">The function to execute.</param>
-    /// <returns>A new result.</returns>
+    /// <returns>The mapped result.</returns>
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Result<TResult> Map<T, TResult>(this Result<T> result, Func<T, TResult> func)
     {
@@ -49,14 +48,14 @@ public static class MapExtension
     }
 
     /// <summary>
-    /// Executes a function if the result is successful, otherwise forwards the failure.
+    /// Transforms the value of a custom-error result on success.
     /// </summary>
-    /// <typeparam name="T">The type of the input value.</typeparam>
-    /// <typeparam name="TResult">The type of the result value.</typeparam>
-    /// <typeparam name="TError">The type of the error.</typeparam>
+    /// <typeparam name="T">The input type.</typeparam>
+    /// <typeparam name="TResult">The result type.</typeparam>
+    /// <typeparam name="TError">The error type.</typeparam>
     /// <param name="result">The result.</param>
     /// <param name="action">The function to execute.</param>
-    /// <returns>A new result.</returns>
+    /// <returns>The mapped result.</returns>
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Result<TResult, TError> Map<T, TResult, TError>(this Result<T, TError> result, Func<T, TResult> action)
     {
@@ -71,12 +70,12 @@ public static class MapExtension
 
     #region Task Parameter
     /// <summary>
-    /// Executes an asynchronous function if the result is successful, otherwise forwards the failure.
+    /// Async version of the corresponding Map overload.
     /// </summary>
-    /// <typeparam name="TResult">The type of the result value.</typeparam>
+    /// <typeparam name="TResult">The result type.</typeparam>
     /// <param name="result">The result.</param>
     /// <param name="func">The asynchronous function to execute.</param>
-    /// <returns>A task representing the asynchronous operation, with a new result.</returns>
+    /// <returns>The mapped result.</returns>
     [DebuggerStepperBoundary]
     public static async Task<Result<TResult>> MapAsync<TResult>(this Result result, Func<Task<TResult>> func)
     {
@@ -89,13 +88,13 @@ public static class MapExtension
     }
 
     /// <summary>
-    /// Executes an asynchronous function if the result is successful, otherwise forwards the failure.
+    /// Async version of the corresponding Map overload.
     /// </summary>
-    /// <typeparam name="T">The type of the input value.</typeparam>
-    /// <typeparam name="TResult">The type of the result value.</typeparam>
+    /// <typeparam name="T">The input type.</typeparam>
+    /// <typeparam name="TResult">The result type.</typeparam>
     /// <param name="result">The result.</param>
     /// <param name="func">The asynchronous function to execute.</param>
-    /// <returns>A task representing the asynchronous operation, with a new result.</returns>
+    /// <returns>The mapped result.</returns>
     [DebuggerStepperBoundary]
     public static async Task<Result<TResult>> MapAsync<T, TResult>(this Result<T> result, Func<T, Task<TResult>> func)
     {
@@ -108,14 +107,14 @@ public static class MapExtension
     }
 
     /// <summary>
-    /// Executes an asynchronous function if the result is successful, otherwise forwards the failure.
+    /// Async version of the corresponding Map overload.
     /// </summary>
-    /// <typeparam name="T">The type of the input value.</typeparam>
-    /// <typeparam name="TResult">The type of the result value.</typeparam>
-    /// <typeparam name="TError">The type of the error.</typeparam>
+    /// <typeparam name="T">The input type.</typeparam>
+    /// <typeparam name="TResult">The result type.</typeparam>
+    /// <typeparam name="TError">The error type.</typeparam>
     /// <param name="result">The result.</param>
     /// <param name="func">The asynchronous function to execute.</param>
-    /// <returns>A task representing the asynchronous operation, with a new result.</returns>
+    /// <returns>The mapped result.</returns>
     [DebuggerStepperBoundary]
     public static async Task<Result<TResult, TError>> MapAsync<T, TResult, TError>(this Result<T, TError> result, Func<T, Task<TResult>> func)
     {
@@ -130,12 +129,12 @@ public static class MapExtension
 
     #region Task Result
     /// <summary>
-    /// Executes a function if the awaited result is successful, otherwise forwards the failure.
+    /// Awaits the result, then maps on success.
     /// </summary>
-    /// <typeparam name="TResult">The type of the result value.</typeparam>
+    /// <typeparam name="TResult">The result type.</typeparam>
     /// <param name="resultTask">The result task.</param>
     /// <param name="func">The function to execute.</param>
-    /// <returns>A task representing the asynchronous operation, with a new result.</returns>
+    /// <returns>The mapped result.</returns>
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Task<Result<TResult>> MapAsync<TResult>(this Task<Result> resultTask, Func<TResult> func)
     {
@@ -160,13 +159,13 @@ public static class MapExtension
     }
 
     /// <summary>
-    /// Executes a function if the awaited result is successful, otherwise forwards the failure.
+    /// Awaits the result, then maps on success.
     /// </summary>
-    /// <typeparam name="T">The type of the input value.</typeparam>
-    /// <typeparam name="TResult">The type of the result value.</typeparam>
+    /// <typeparam name="T">The input type.</typeparam>
+    /// <typeparam name="TResult">The result type.</typeparam>
     /// <param name="resultTask">The result task.</param>
     /// <param name="func">The function to execute.</param>
-    /// <returns>A task representing the asynchronous operation, with a new result.</returns>
+    /// <returns>The mapped result.</returns>
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Task<Result<TResult>> MapAsync<T, TResult>(this Task<Result<T>> resultTask, Func<T, TResult> func)
     {
@@ -191,14 +190,14 @@ public static class MapExtension
     }
 
     /// <summary>
-    /// Executes a function if the awaited result is successful, otherwise forwards the failure.
+    /// Awaits the result, then maps on success.
     /// </summary>
-    /// <typeparam name="T">The type of the input value.</typeparam>
-    /// <typeparam name="TResult">The type of the result value.</typeparam>
-    /// <typeparam name="TError">The type of the error.</typeparam>
+    /// <typeparam name="T">The input type.</typeparam>
+    /// <typeparam name="TResult">The result type.</typeparam>
+    /// <typeparam name="TError">The error type.</typeparam>
     /// <param name="resultTask">The result task.</param>
     /// <param name="func">The function to execute.</param>
-    /// <returns>A task representing the asynchronous operation, with a new result.</returns>
+    /// <returns>The mapped result.</returns>
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Task<Result<TResult, TError>> MapAsync<T, TResult, TError>(this Task<Result<T, TError>> resultTask, Func<T, TResult> func)
     {
@@ -225,12 +224,12 @@ public static class MapExtension
 
     #region Task Result and Parameter
     /// <summary>
-    /// Executes an asynchronous function if the awaited result is successful, otherwise forwards the failure.
+    /// Awaits the result, then runs the async function on success.
     /// </summary>
-    /// <typeparam name="TResult">The type of the result value.</typeparam>
+    /// <typeparam name="TResult">The result type.</typeparam>
     /// <param name="resultTask">The result task.</param>
     /// <param name="func">The asynchronous function to execute.</param>
-    /// <returns>A task representing the asynchronous operation, with a new result.</returns>
+    /// <returns>The mapped result.</returns>
     [DebuggerStepperBoundary]
     public static async Task<Result<TResult>> MapAsync<TResult>(this Task<Result> resultTask, Func<Task<TResult>> func)
     {
@@ -245,13 +244,13 @@ public static class MapExtension
     }
 
     /// <summary>
-    /// Executes an asynchronous function if the awaited result is successful, otherwise forwards the failure.
+    /// Awaits the result, then runs the async function on success.
     /// </summary>
-    /// <typeparam name="T">The type of the input value.</typeparam>
-    /// <typeparam name="TResult">The type of the result value.</typeparam>
+    /// <typeparam name="T">The input type.</typeparam>
+    /// <typeparam name="TResult">The result type.</typeparam>
     /// <param name="resultTask">The result task.</param>
     /// <param name="func">The asynchronous function to execute.</param>
-    /// <returns>A task representing the asynchronous operation, with a new result.</returns>
+    /// <returns>The mapped result.</returns>
     [DebuggerStepperBoundary]
     public static async Task<Result<TResult>> MapAsync<T, TResult>(this Task<Result<T>> resultTask, Func<T, Task<TResult>> func)
     {
@@ -266,14 +265,14 @@ public static class MapExtension
     }
 
     /// <summary>
-    /// Executes an asynchronous function if the awaited result is successful, otherwise forwards the failure.
+    /// Awaits the result, then runs the async function on success.
     /// </summary>
-    /// <typeparam name="T">The type of the input value.</typeparam>
-    /// <typeparam name="TResult">The type of the result value.</typeparam>
-    /// <typeparam name="TError">The type of the error.</typeparam>
+    /// <typeparam name="T">The input type.</typeparam>
+    /// <typeparam name="TResult">The result type.</typeparam>
+    /// <typeparam name="TError">The error type.</typeparam>
     /// <param name="resultTask">The result task.</param>
     /// <param name="func">The asynchronous function to execute.</param>
-    /// <returns>A task representing the asynchronous operation, with a new result.</returns>
+    /// <returns>The mapped result.</returns>
     [DebuggerStepperBoundary]
     public static async Task<Result<TResult, TError>> MapAsync<T, TResult, TError>(this Task<Result<T, TError>> resultTask, Func<T, Task<TResult>> func)
     {
@@ -291,12 +290,12 @@ public static class MapExtension
 #if NETSTANDARD2_1_OR_GREATER || NET6_0_OR_GREATER
 
     /// <summary>
-    /// Executes an asynchronous function returning a <see cref="ValueTask{TResult}"/> if the result is successful, otherwise forwards the failure.
+    /// ValueTask overload of the corresponding Map.
     /// </summary>
-    /// <typeparam name="TResult">The type of the result value.</typeparam>
+    /// <typeparam name="TResult">The result type.</typeparam>
     /// <param name="result">The result.</param>
     /// <param name="func">The asynchronous function to execute.</param>
-    /// <returns>A task representing the asynchronous operation, with a new result.</returns>
+    /// <returns>The mapped result.</returns>
     [DebuggerStepperBoundary]
     public static async Task<Result<TResult>> MapAsync<TResult>(this Result result, Func<ValueTask<TResult>> func)
     {
@@ -309,13 +308,13 @@ public static class MapExtension
     }
 
     /// <summary>
-    /// Executes an asynchronous function returning a <see cref="ValueTask{TResult}"/> if the result is successful, otherwise forwards the failure.
+    /// ValueTask overload of the corresponding Map.
     /// </summary>
-    /// <typeparam name="T">The type of the input value.</typeparam>
-    /// <typeparam name="TResult">The type of the result value.</typeparam>
+    /// <typeparam name="T">The input type.</typeparam>
+    /// <typeparam name="TResult">The result type.</typeparam>
     /// <param name="result">The result.</param>
     /// <param name="func">The asynchronous function to execute.</param>
-    /// <returns>A task representing the asynchronous operation, with a new result.</returns>
+    /// <returns>The mapped result.</returns>
     [DebuggerStepperBoundary]
     public static async Task<Result<TResult>> MapAsync<T, TResult>(this Result<T> result, Func<T, ValueTask<TResult>> func)
     {
@@ -328,12 +327,12 @@ public static class MapExtension
     }
 
     /// <summary>
-    /// Executes a function if the awaited result is successful, otherwise forwards the failure. Supports ValueTask.
+    /// ValueTask overload: awaits the result, then maps on success.
     /// </summary>
-    /// <typeparam name="TResult">The type of the result value.</typeparam>
+    /// <typeparam name="TResult">The result type.</typeparam>
     /// <param name="resultTask">The result task.</param>
     /// <param name="func">The function to execute.</param>
-    /// <returns>A ValueTask representing the asynchronous operation, with a new result.</returns>
+    /// <returns>The mapped result.</returns>
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ValueTask<Result<TResult>> MapAsync<TResult>(this ValueTask<Result> resultTask, Func<TResult> func)
     {
@@ -358,13 +357,13 @@ public static class MapExtension
     }
 
     /// <summary>
-    /// Executes a function if the awaited result is successful, otherwise forwards the failure. Supports ValueTask.
+    /// ValueTask overload: awaits the result, then maps on success.
     /// </summary>
-    /// <typeparam name="T">The type of the input value.</typeparam>
-    /// <typeparam name="TResult">The type of the result value.</typeparam>
+    /// <typeparam name="T">The input type.</typeparam>
+    /// <typeparam name="TResult">The result type.</typeparam>
     /// <param name="resultTask">The result task.</param>
     /// <param name="func">The function to execute.</param>
-    /// <returns>A ValueTask representing the asynchronous operation, with a new result.</returns>
+    /// <returns>The mapped result.</returns>
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ValueTask<Result<TResult>> MapAsync<T, TResult>(this ValueTask<Result<T>> resultTask, Func<T, TResult> func)
     {
@@ -389,12 +388,12 @@ public static class MapExtension
     }
 
     /// <summary>
-    /// Executes an asynchronous function returning a <see cref="ValueTask{TResult}"/> if the awaited result is successful, otherwise forwards the failure.
+    /// ValueTask overload: awaits the result, then runs the async function on success.
     /// </summary>
-    /// <typeparam name="TResult">The type of the result value.</typeparam>
+    /// <typeparam name="TResult">The result type.</typeparam>
     /// <param name="resultTask">The result task.</param>
     /// <param name="func">The asynchronous function to execute.</param>
-    /// <returns>A ValueTask representing the asynchronous operation, with a new result.</returns>
+    /// <returns>The mapped result.</returns>
     [DebuggerStepperBoundary]
     public static async ValueTask<Result<TResult>> MapAsync<TResult>(this ValueTask<Result> resultTask, Func<ValueTask<TResult>> func)
     {
@@ -409,13 +408,13 @@ public static class MapExtension
     }
 
     /// <summary>
-    /// Executes an asynchronous function returning a <see cref="ValueTask{TResult}"/> if the awaited result is successful, otherwise forwards the failure.
+    /// ValueTask overload: awaits the result, then runs the async function on success.
     /// </summary>
-    /// <typeparam name="T">The type of the input value.</typeparam>
-    /// <typeparam name="TResult">The type of the result value.</typeparam>
+    /// <typeparam name="T">The input type.</typeparam>
+    /// <typeparam name="TResult">The result type.</typeparam>
     /// <param name="resultTask">The result task.</param>
     /// <param name="func">The asynchronous function to execute.</param>
-    /// <returns>A ValueTask representing the asynchronous operation, with a new result.</returns>
+    /// <returns>The mapped result.</returns>
     [DebuggerStepperBoundary]
     public static async ValueTask<Result<TResult>> MapAsync<T, TResult>(this ValueTask<Result<T>> resultTask, Func<T, ValueTask<TResult>> func)
     {
@@ -430,13 +429,13 @@ public static class MapExtension
     }
 
     /// <summary>
-    /// Executes an asynchronous function returning a <see cref="Task{TResult}"/> if the awaited result is successful, otherwise forwards the failure.
+    /// ValueTask overload: awaits the result, then runs the async Task function on success.
     /// </summary>
-    /// <typeparam name="T">The type of the input value.</typeparam>
-    /// <typeparam name="TResult">The type of the result value.</typeparam>
+    /// <typeparam name="T">The input type.</typeparam>
+    /// <typeparam name="TResult">The result type.</typeparam>
     /// <param name="resultTask">The result task.</param>
     /// <param name="func">The asynchronous function to execute.</param>
-    /// <returns>A task representing the asynchronous operation, with a new result.</returns>
+    /// <returns>The mapped result.</returns>
     [DebuggerStepperBoundary]
     public static async Task<Result<TResult>> MapAsync<T, TResult>(this ValueTask<Result<T>> resultTask, Func<T, Task<TResult>> func)
     {
@@ -451,12 +450,12 @@ public static class MapExtension
     }
 
     /// <summary>
-    /// Executes an asynchronous function returning a <see cref="Task{TResult}"/> if the awaited result is successful, otherwise forwards the failure.
+    /// ValueTask overload: awaits the result, then runs the async Task function on success.
     /// </summary>
-    /// <typeparam name="TResult">The type of the result value.</typeparam>
+    /// <typeparam name="TResult">The result type.</typeparam>
     /// <param name="resultTask">The result task.</param>
     /// <param name="func">The asynchronous function to execute.</param>
-    /// <returns>A task representing the asynchronous operation, with a new result.</returns>
+    /// <returns>The mapped result.</returns>
     [DebuggerStepperBoundary]
     public static async Task<Result<TResult>> MapAsync<TResult>(this ValueTask<Result> resultTask, Func<Task<TResult>> func)
     {

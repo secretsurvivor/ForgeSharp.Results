@@ -3,57 +3,57 @@
 namespace ForgeSharp.Results;
 
 /// <summary>
-/// Represents a synchronous pipeline that produces a <see cref="Result"/>.
+/// A pipeline that produces a <see cref="Result"/>.
 /// </summary>
 public interface IPipeline
 {
     /// <summary>
-    /// Executes the pipeline and returns a <see cref="Result"/>.
+    /// Executes the pipeline.
     /// </summary>
-    /// <returns>The result of the pipeline execution.</returns>
+    /// <returns>The execution result.</returns>
     public Result Execute();
 }
 
 /// <summary>
-/// Represents an asynchronous pipeline that produces a <see cref="Result"/>.
+/// Async counterpart of <see cref="IPipeline"/>.
 /// </summary>
 public interface IAsyncPipeline
 {
     /// <summary>
-    /// Executes the pipeline asynchronously and returns a <see cref="Result"/>.
+    /// Executes the pipeline asynchronously.
     /// </summary>
-    /// <returns>A task representing the asynchronous operation, with the result of the pipeline execution.</returns>
+    /// <returns>The execution result.</returns>
     public Task<Result> ExecuteAsync();
 }
 
 /// <summary>
-/// Represents a synchronous pipeline that produces a <see cref="Result{T}"/>.
+/// A pipeline that produces a <see cref="Result{T}"/>.
 /// </summary>
-/// <typeparam name="T">The type of the value produced by the pipeline.</typeparam>
+/// <typeparam name="T">The value type.</typeparam>
 public interface IPipeline<T>
 {
     /// <summary>
-    /// Executes the pipeline and returns a <see cref="Result{T}"/>.
+    /// Executes the pipeline.
     /// </summary>
-    /// <returns>The result of the pipeline execution.</returns>
+    /// <returns>The execution result.</returns>
     public Result<T> Execute();
 }
 
 /// <summary>
-/// Represents an asynchronous pipeline that produces a <see cref="Result{T}"/>.
+/// Async counterpart of <see cref="IPipeline{T}"/>.
 /// </summary>
-/// <typeparam name="T">The type of the value produced by the pipeline.</typeparam>
+/// <typeparam name="T">The value type.</typeparam>
 public interface IAsyncPipeline<T>
 {
     /// <summary>
-    /// Executes the pipeline asynchronously and returns a <see cref="Result{T}"/>.
+    /// Executes the pipeline asynchronously.
     /// </summary>
-    /// <returns>A task representing the asynchronous operation, with the result of the pipeline execution.</returns>
+    /// <returns>The execution result.</returns>
     public Task<Result<T>> ExecuteAsync();
 }
 
 /// <summary>
-/// Provides a synchronous pipeline implementation.
+/// Default <see cref="IPipeline"/> implementation.
 /// </summary>
 public readonly struct Pipeline : IPipeline
 {
@@ -65,7 +65,7 @@ public readonly struct Pipeline : IPipeline
     }
 
     /// <summary>
-    /// Gets a successful starting <see cref="Result"/> for a pipeline.
+    /// A successful starting result for pipeline chains.
     /// </summary>
     public static Result Start => Result.Ok();
 
@@ -94,7 +94,7 @@ public readonly struct Pipeline : IPipeline
     /// <summary>
     /// Creates a new <see cref="IPipeline{T}"/> from the specified delegate.
     /// </summary>
-    /// <typeparam name="T">The type of the value produced by the pipeline.</typeparam>
+    /// <typeparam name="T">The value type.</typeparam>
     /// <param name="pipeline">The pipeline delegate.</param>
     /// <returns>An <see cref="IPipeline{T}"/> instance.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -106,7 +106,7 @@ public readonly struct Pipeline : IPipeline
     /// <summary>
     /// Creates a new <see cref="IAsyncPipeline{T}"/> from the specified delegate.
     /// </summary>
-    /// <typeparam name="T">The type of the value produced by the pipeline.</typeparam>
+    /// <typeparam name="T">The value type.</typeparam>
     /// <param name="pipeline">The asynchronous pipeline delegate.</param>
     /// <returns>An <see cref="IAsyncPipeline{T}"/> instance.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -171,7 +171,7 @@ internal readonly struct AsyncPipeline<T> : IAsyncPipeline<T>
 }
 
 /// <summary>
-/// Provides extension methods for working with pipelines.
+/// Extension methods for wrapping delegates as pipelines and composing fallback behaviour.
 /// </summary>
 public static class PipelineExtensions
 {
@@ -200,7 +200,7 @@ public static class PipelineExtensions
     /// <summary>
     /// Converts a <see cref="Func{Result{T}}"/> to an <see cref="IPipeline{T}"/>.
     /// </summary>
-    /// <typeparam name="T">The type of the value produced by the pipeline.</typeparam>
+    /// <typeparam name="T">The value type.</typeparam>
     /// <param name="pipeline">The pipeline delegate.</param>
     /// <returns>An <see cref="IPipeline{T}"/> instance.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -212,7 +212,7 @@ public static class PipelineExtensions
     /// <summary>
     /// Converts a <see cref="Func{Task{Result{T}}}"/> to an <see cref="IAsyncPipeline{T}"/>.
     /// </summary>
-    /// <typeparam name="T">The type of the value produced by the pipeline.</typeparam>
+    /// <typeparam name="T">The value type.</typeparam>
     /// <param name="pipeline">The asynchronous pipeline delegate.</param>
     /// <returns>An <see cref="IAsyncPipeline{T}"/> instance.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -222,7 +222,7 @@ public static class PipelineExtensions
     }
 
     /// <summary>
-    /// Executes the primary pipeline, and if it fails, executes the backup pipeline.
+    /// Runs the primary pipeline; falls back to the backup on failure.
     /// </summary>
     /// <param name="primary">The primary pipeline.</param>
     /// <param name="backup">The backup pipeline.</param>
@@ -240,11 +240,11 @@ public static class PipelineExtensions
     }
 
     /// <summary>
-    /// Executes the primary asynchronous pipeline, and if it fails, executes the backup asynchronous pipeline.
+    /// Async version of <see cref="Fallback(IPipeline, IPipeline)"/>.
     /// </summary>
-    /// <param name="primary">The primary asynchronous pipeline.</param>
-    /// <param name="backup">The backup asynchronous pipeline.</param>
-    /// <returns>A task representing the asynchronous operation, with the result of the primary or backup pipeline.</returns>
+    /// <param name="primary">The primary async pipeline.</param>
+    /// <param name="backup">The backup async pipeline.</param>
+    /// <returns>The result of the primary or backup pipeline.</returns>
     public static async Task<Result> FallbackAsync(this IAsyncPipeline primary, IAsyncPipeline backup)
     {
         var result = await primary.ExecuteAsync();
@@ -258,9 +258,9 @@ public static class PipelineExtensions
     }
 
     /// <summary>
-    /// Executes the primary pipeline, and if it fails, executes the backup pipeline.
+    /// Runs the primary pipeline; falls back to the backup on failure.
     /// </summary>
-    /// <typeparam name="T">The type of the value produced by the pipeline.</typeparam>
+    /// <typeparam name="T">The value type.</typeparam>
     /// <param name="primary">The primary pipeline.</param>
     /// <param name="backup">The backup pipeline.</param>
     /// <returns>The result of the primary or backup pipeline.</returns>
@@ -277,12 +277,12 @@ public static class PipelineExtensions
     }
 
     /// <summary>
-    /// Executes the primary asynchronous pipeline, and if it fails, executes the backup asynchronous pipeline.
+    /// Async version of <see cref="Fallback{T}(IPipeline{T}, IPipeline{T})"/>.
     /// </summary>
-    /// <typeparam name="T">The type of the value produced by the pipeline.</typeparam>
-    /// <param name="primary">The primary asynchronous pipeline.</param>
-    /// <param name="backup">The backup asynchronous pipeline.</param>
-    /// <returns>A task representing the asynchronous operation, with the result of the primary or backup pipeline.</returns>
+    /// <typeparam name="T">The value type.</typeparam>
+    /// <param name="primary">The primary async pipeline.</param>
+    /// <param name="backup">The backup async pipeline.</param>
+    /// <returns>The result of the primary or backup pipeline.</returns>
     public static async Task<Result<T>> FallbackAsync<T>(this IAsyncPipeline<T> primary, IAsyncPipeline<T> backup)
     {
         var result = await primary.ExecuteAsync();

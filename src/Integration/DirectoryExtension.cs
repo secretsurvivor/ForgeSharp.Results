@@ -1,17 +1,17 @@
 ﻿namespace ForgeSharp.Results.Integration;
 
 /// <summary>
-/// Provides extension methods for <see cref="DirectoryInfo"/> and <see cref="Directory"/> to wrap directory operations in <see cref="Result"/> types.
+/// Result-returning wrappers for directory operations.
 /// </summary>
 public static class DirectoryExtension
 {
     extension(DirectoryInfo directoryInfo)
     {
         /// <summary>
-        /// Creates a directory and returns a <see cref="Result"/> indicating success or failure.
+        /// Creates the directory.
         /// </summary>
         /// <param name="directoryInfo">The directory to create.</param>
-        /// <returns>A result indicating whether the directory was created successfully.</returns>
+        /// <returns>Success or the failure reason.</returns>
         public Result CreateAsResult()
         {
             try
@@ -30,10 +30,10 @@ public static class DirectoryExtension
         }
 
         /// <summary>
-        /// Deletes a directory and returns a <see cref="Result"/> indicating success or failure.
+        /// Deletes the directory.
         /// </summary>
         /// <param name="directoryInfo">The directory to delete.</param>
-        /// <returns>A result indicating whether the directory was deleted successfully.</returns>
+        /// <returns>Success or the failure reason.</returns>
         public Result DeleteAsResult()
         {
             try
@@ -55,10 +55,10 @@ public static class DirectoryExtension
     extension(Directory)
     {
         /// <summary>
-        /// Creates a directory at the specified path and returns a <see cref="Result{T}"/> containing the created <see cref="DirectoryInfo"/>.
+        /// Creates a directory at the given path.
         /// </summary>
         /// <param name="path">The path of the directory to create.</param>
-        /// <returns>A result containing the created directory information if successful, otherwise a failed result.</returns>
+        /// <returns>The created <see cref="DirectoryInfo"/>, or a failure.</returns>
         public static Result<DirectoryInfo> CreateAsResult(string path)
         {
             try
@@ -76,10 +76,10 @@ public static class DirectoryExtension
         }
 
         /// <summary>
-        /// Deletes a directory at the specified path and returns a <see cref="Result"/> indicating success or failure.
+        /// Deletes a directory at the given path.
         /// </summary>
         /// <param name="path">The path of the directory to delete.</param>
-        /// <returns>A result indicating whether the directory was deleted successfully.</returns>
+        /// <returns>Success or the failure reason.</returns>
         public static Result DeleteAsResult(string path)
         {
             try

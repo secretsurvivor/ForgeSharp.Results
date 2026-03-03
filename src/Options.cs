@@ -1,18 +1,18 @@
 ﻿namespace ForgeSharp.Results;
 
 /// <summary>
-/// Represents an optional value of a given type.
+/// Optional value wrapper.
 /// </summary>
-/// <typeparam name="T">The type of the value.</typeparam>
+/// <typeparam name="T">The value type.</typeparam>
 public readonly struct Options<T>
 {
     /// <summary>
-    /// Gets a value indicating whether the option has a value.
+    /// True if a value is present.
     /// </summary>
     public bool HasValue { get; }
 
     /// <summary>
-    /// Gets the value associated with the option if it exists.
+    /// The value, if present.
     /// </summary>
     public T Value { get; }
 
@@ -38,7 +38,7 @@ public readonly struct Options<T>
     }
 
     /// <summary>
-    /// Creates an empty option with no value.
+    /// Creates an empty option.
     /// </summary>
     /// <returns>An empty option.</returns>
     public static Options<T> None()

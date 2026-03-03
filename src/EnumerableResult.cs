@@ -11,8 +11,7 @@ public readonly struct EnumerableResult
     internal readonly Result[] _results;
 
     /// <summary>
-    /// Gets the underlying results as an <see cref="IReadOnlyList{Result}"/>.
-    /// The returned list is the internal array and should be treated as read-only by consumers.
+    /// The underlying results.
     /// </summary>
     public IReadOnlyList<Result> Results
     {
@@ -205,8 +204,7 @@ public readonly struct EnumerableResult
     }
 
     /// <summary>
-    /// Iterates the collection and invokes the provided value-type visitor for each element.
-    /// Using a struct-based visitor avoids delegate allocations during iteration.
+    /// Iterates the collection using a struct visitor, avoiding delegate allocations.
     /// </summary>
     /// <typeparam name="TVisitor">A struct implementing <see cref="IResultVisitor"/>.</typeparam>
     /// <param name="visiter">The visitor instance whose <see cref="IResultVisitor.Visit(Result)"/> method will be called for each item.</param>
@@ -232,8 +230,7 @@ public readonly struct EnumerableResult<T>
     internal readonly Result<T>[] _results;
 
     /// <summary>
-    /// Gets the underlying generic results as an <see cref="IReadOnlyList{Result}"/>.
-    /// The returned list is the internal array and should be treated as read-only by consumers.
+    /// The underlying results.
     /// </summary>
     public IReadOnlyList<Result<T>> Results
     {
@@ -242,7 +239,7 @@ public readonly struct EnumerableResult<T>
     }
 
     /// <summary>
-    /// Gets the total number of results in the collection.
+    /// Total number of results.
     /// </summary>
     public int Total
     {
@@ -254,27 +251,27 @@ public readonly struct EnumerableResult<T>
     private readonly int _failureCount;
 
     /// <summary>
-    /// Gets the number of successful results in the collection.
+    /// Number of successful results.
     /// </summary>
     public int SuccessCount => _successCount;
 
     /// <summary>
-    /// Gets the number of failed results in the collection.
+    /// Number of failed results.
     /// </summary>
     public int FailureCount => _failureCount;
 
     /// <summary>
-    /// Gets a value indicating whether all results in the collection are successful.
+    /// True if all results succeeded.
     /// </summary>
     public bool IsSuccess => _failureCount == 0;
 
     /// <summary>
-    /// Gets the ratio of successful results to total results (0.0 when the collection is empty).
+    /// Ratio of successes to total (0.0 if empty).
     /// </summary>
     public double SuccessRatio => _results.Length == 0 ? 0d : (double)_successCount / _results.Length;
 
     /// <summary>
-    /// Gets the success percentage (0.0 to 100.0) computed from <see cref="SuccessRatio"/>.
+    /// Success ratio as a percentage (0.0–100.0).
     /// </summary>
     public double SuccessPercentage => SuccessRatio * 100d;
 
@@ -400,8 +397,7 @@ public readonly struct EnumerableResult<T>
     }
 
     /// <summary>
-    /// Iterates the generic collection and invokes the provided value-type visitor for each element.
-    /// Using a struct-based visitor avoids delegate allocations during iteration.
+    /// Iterates the collection using a struct visitor, avoiding delegate allocations.
     /// </summary>
     /// <typeparam name="TVisitor">A struct implementing <see cref="IResultVisitor{T}"/>.</typeparam>
     /// <param name="visiter">The visitor instance whose <see cref="IResultVisitor{T}.Visit(Result{T})"/> method will be called for each item.</param>

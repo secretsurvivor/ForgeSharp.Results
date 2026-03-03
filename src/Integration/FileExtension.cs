@@ -1,14 +1,14 @@
 ﻿namespace ForgeSharp.Results.Integration;
 
 /// <summary>
-/// Provides extension methods for <see cref="FileInfo"/> and <see cref="File"/> to wrap file operations in <see cref="Result"/> types.
+/// Result-returning wrappers for file operations.
 /// </summary>
 public static class FileExtension
 {
     extension(FileInfo fileInfo)
     {
         /// <summary>
-        /// Opens a file and returns a <see cref="FileStream"/> wrapped in a <see cref="Result{T}"/>.
+        /// Opens the file as a Result.
         /// </summary>
         /// <param name="fileInfo">The file to open.</param>
         /// <param name="mode">The file mode.</param>
@@ -16,7 +16,7 @@ public static class FileExtension
         /// <param name="share">The file share mode.</param>
         /// <param name="useAsync">Whether to use asynchronous I/O.</param>
         /// <param name="bufferSize">The buffer size for the stream.</param>
-        /// <returns>A result containing the file stream or an error message.</returns>
+        /// <returns>The file stream, or a failure.</returns>
         public Result<FileStream> OpenAsResult(FileMode mode, FileAccess access, FileShare share, bool useAsync, int bufferSize = 4096)
         {
             try
@@ -34,26 +34,26 @@ public static class FileExtension
         }
 
         /// <summary>
-        /// Opens a file for reading and returns a <see cref="FileStream"/> wrapped in a <see cref="Result{T}"/>.
+        /// Opens for reading.
         /// </summary>
         /// <param name="fileInfo">The file to open.</param>
         /// <param name="useAsync">Whether to use asynchronous I/O.</param>
-        /// <returns>A result containing the file stream or an error message.</returns>
+        /// <returns>The file stream, or a failure.</returns>
         public Result<FileStream> OpenReadAsResult(bool useAsync = false) => OpenAsResult(fileInfo, FileMode.Open, FileAccess.Read, FileShare.Read, useAsync);
 
         /// <summary>
-        /// Opens a file for writing and returns a <see cref="FileStream"/> wrapped in a <see cref="Result{T}"/>.
+        /// Opens for writing.
         /// </summary>
         /// <param name="fileInfo">The file to open.</param>
         /// <param name="useAsync">Whether to use asynchronous I/O.</param>
-        /// <returns>A result containing the file stream or an error message.</returns>
+        /// <returns>The file stream, or a failure.</returns>
         public Result<FileStream> OpenWriteAsResult(bool useAsync = false) => OpenAsResult(fileInfo, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None, useAsync);
     }
 
     extension(File)
     {
         /// <summary>
-        /// Opens a file and returns a <see cref="FileStream"/> wrapped in a <see cref="Result{T}"/>.
+        /// Opens the file as a Result.
         /// </summary>
         /// <param name="path">The path to the file.</param>
         /// <param name="mode">The file mode.</param>
@@ -61,7 +61,7 @@ public static class FileExtension
         /// <param name="share">The file share mode.</param>
         /// <param name="useAsync">Whether to use asynchronous I/O.</param>
         /// <param name="bufferSize">The buffer size for the stream.</param>
-        /// <returns>A result containing the file stream or an error message.</returns>
+        /// <returns>The file stream, or a failure.</returns>
         public static Result<FileStream> OpenAsResult(string path, FileMode mode, FileAccess access, FileShare share, bool useAsync, int bufferSize = 4096)
         {
             try
@@ -79,10 +79,10 @@ public static class FileExtension
         }
 
         /// <summary>
-        /// Deletes a file and returns a <see cref="Result"/> indicating success or failure.
+        /// Deletes the file.
         /// </summary>
         /// <param name="path">The path to the file to delete.</param>
-        /// <returns>A result indicating whether the file was deleted successfully.</returns>
+        /// <returns>Success or the failure reason.</returns>
         public static Result DeleteAsResult(string path)
         {
             try

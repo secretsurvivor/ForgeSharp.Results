@@ -1,23 +1,18 @@
 ﻿namespace ForgeSharp.Results.Monad;
 
 /// <summary>
-/// Provides extension methods to aggregate validation messages from collections of <see cref="Result"/> or <see cref="Result{T}"/>.
+/// Aggregation helpers for combining validation messages from result collections.
 /// </summary>
 public static class AggregateExtension
 {
     /// <summary>
-    /// Aggregates validation messages from the provided <see cref="EnumerableResult"/>.
+    /// Combines validation messages from all failed results into a single result.
     /// </summary>
     /// <param name="results">The collection of <see cref="Result"/> values to inspect.</param>
     /// <returns>
     /// A successful <see cref="Result"/> when there are no non-empty failure messages; otherwise a failed <see cref="Result"/>
     /// whose message is the newline-separated concatenation of all non-empty failure messages found in <paramref name="results"/>.
     /// </returns>
-    /// <remarks>
-    /// - If <paramref name="results"/> is empty, this method returns <c>Result.Ok()</c>.
-    /// - Only non-empty <see cref="Result.Message"/> values from failed results are included.
-    /// - The aggregation preserves the iteration order and runs in O(n) time where n is <see cref="EnumerableResult.Total"/>.
-    /// </remarks>
     public static Result AggregateValidation(this EnumerableResult results)
     {
         if (results.Total == 0)
@@ -44,19 +39,14 @@ public static class AggregateExtension
     }
 
     /// <summary>
-    /// Aggregates validation messages from the provided <see cref="EnumerableResult{T}"/>.
+    /// Combines validation messages from all failed results into a single result.
     /// </summary>
-    /// <typeparam name="T">The payload type carried by each <see cref="Result{T}"/>.</typeparam>
+    /// <typeparam name="T">The value type.</typeparam>
     /// <param name="results">The collection of <see cref="Result{T}"/> values to inspect.</param>
     /// <returns>
     /// A successful <see cref="Result"/> when there are no non-empty failure messages; otherwise a failed <see cref="Result"/>
     /// whose message is the newline-separated concatenation of all non-empty failure messages found in <paramref name="results"/>.
     /// </returns>
-    /// <remarks>
-    /// - If <paramref name="results"/> is empty, this method returns <c>Result.Ok()</c>.
-    /// - Only non-empty <see cref="Result{T}.Message"/> values from failed results are included.
-    /// - The aggregation preserves the iteration order and runs in O(n) time where n is <see cref="EnumerableResult{T}.Total"/>.
-    /// </remarks>
     public static Result AggregateValidation<T>(this EnumerableResult<T> results)
     {
         if (results.Total == 0)
