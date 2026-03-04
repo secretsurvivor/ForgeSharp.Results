@@ -660,4 +660,39 @@ public static class MiscExtension
     {
         return EnumerableResult.Create(results);
     }
+
+    /// <summary>
+    /// Converts a successful result to <see cref="Options{T}.Some(T)"/>, or <see cref="Options{T}.None()"/> on failure.
+    /// </summary>
+    /// <typeparam name="T">The value type.</typeparam>
+    /// <param name="result">The result.</param>
+    /// <returns>An option containing the value if the result is successful, otherwise an empty option.</returns>
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Options<T> ToOption<T>(this Result<T> result)
+    {
+        if (result.IsSuccess)
+        {
+            return Options<T>.Some(result.Value);
+        }
+
+        return Options<T>.None();
+    }
+
+    /// <summary>
+    /// Converts a successful discriminated result to <see cref="Options{T}.Some(T)"/>, or <see cref="Options{T}.None()"/> on failure.
+    /// </summary>
+    /// <typeparam name="TValue">The value type.</typeparam>
+    /// <typeparam name="TError">The error type.</typeparam>
+    /// <param name="result">The result.</param>
+    /// <returns>An option containing the value if the result is successful, otherwise an empty option.</returns>
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Options<TValue> ToOption<TValue, TError>(this Result<TValue, TError> result)
+    {
+        if (result.IsSuccess)
+        {
+            return Options<TValue>.Some(result.Value);
+        }
+
+        return Options<TValue>.None();
+    }
 }

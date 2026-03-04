@@ -119,4 +119,78 @@ public static class OptionsMiscExtension
     {
         return option.HasValue ? folder(option.Value) : defaultValue;
     }
+
+    /// <summary>
+    /// Converts the option to a <see cref="Result{T}"/>, using the specified message on failure.
+    /// </summary>
+    /// <typeparam name="T">The value type.</typeparam>
+    /// <param name="option">The option.</param>
+    /// <param name="failureMessage">The validation failure message to use when the option has no value.</param>
+    /// <returns>A success result with the value if the option has a value, otherwise a failure result.</returns>
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Result<T> ToResult<T>(this Options<T> option, string failureMessage)
+    {
+        if (option.HasValue)
+        {
+            return Result.Ok(option.Value);
+        }
+
+        return Result.Fail<T>(failureMessage);
+    }
+
+    /// <summary>
+    /// Converts the option to a <see cref="Result{T}"/>, using a lazily evaluated message on failure.
+    /// </summary>
+    /// <typeparam name="T">The value type.</typeparam>
+    /// <param name="option">The option.</param>
+    /// <param name="failureMessageFactory">The function to produce the validation failure message when the option has no value.</param>
+    /// <returns>A success result with the value if the option has a value, otherwise a failure result.</returns>
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Result<T> ToResult<T>(this Options<T> option, Func<string> failureMessageFactory)
+    {
+        if (option.HasValue)
+        {
+            return Result.Ok(option.Value);
+        }
+
+        return Result.Fail<T>(failureMessageFactory());
+    }
+
+    /// <summary>
+    /// Converts the option to a <see cref="Result{T, TError}"/>, using the specified error on failure.
+    /// </summary>
+    /// <typeparam name="T">The value type.</typeparam>
+    /// <typeparam name="TError">The error type.</typeparam>
+    /// <param name="option">The option.</param>
+    /// <param name="error">The error to use when the option has no value.</param>
+    /// <returns>A success result with the value if the option has a value, otherwise a failure result with the error.</returns>
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Result<T, TError> ToResult<T, TError>(this Options<T> option, TError error)
+    {
+        if (option.HasValue)
+        {
+            return Result.Ok<T, TError>(option.Value);
+        }
+
+        return Result.Fail<T, TError>(error);
+    }
+
+    /// <summary>
+    /// Converts the option to a <see cref="Result{T, TError}"/>, using a lazily evaluated error on failure.
+    /// </summary>
+    /// <typeparam name="T">The value type.</typeparam>
+    /// <typeparam name="TError">The error type.</typeparam>
+    /// <param name="option">The option.</param>
+    /// <param name="errorFactory">The function to produce the error when the option has no value.</param>
+    /// <returns>A success result with the value if the option has a value, otherwise a failure result with the error.</returns>
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Result<T, TError> ToResult<T, TError>(this Options<T> option, Func<TError> errorFactory)
+    {
+        if (option.HasValue)
+        {
+            return Result.Ok<T, TError>(option.Value);
+        }
+
+        return Result.Fail<T, TError>(errorFactory());
+    }
 }
