@@ -53,7 +53,7 @@ public interface IResult<out T> : IResult
 /// Non-generic result representing success or failure.
 /// </summary>
 [StructLayout(LayoutKind.Sequential), Serializable, ReadOnly(true)]
-public readonly struct Result : IResult, ISerializable
+public readonly struct Result : IResult, ISerializable, IEquatable<Result>
 {
     private readonly string? _message;
     private readonly Exception? _exception;
@@ -341,6 +341,57 @@ public readonly struct Result : IResult, ISerializable
         info.AddValue(nameof(Exception), Exception, typeof(Exception));
     }
 
+    /// <inheritdoc/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool Equals(Result other)
+    {
+        if (IsSuccess)
+        {
+            return other.IsSuccess;
+        }
+
+        if (IsValidationFault)
+        {
+            return other.IsValidationFault && _message == other._message;
+        }
+
+        if (IsException)
+        {
+            return other.IsException && ReferenceEquals(_exception, other._exception);
+        }
+
+        return false;
+    }
+
+    /// <inheritdoc/>
+    public override bool Equals(object? obj) => obj is Result other && Equals(other);
+
+    /// <inheritdoc/>
+    public override int GetHashCode()
+    {
+        if (IsSuccess)
+        {
+            return 0;
+        }
+
+        if (IsValidationFault)
+        {
+            return _message!.GetHashCode();
+        }
+
+        return _exception!.GetHashCode();
+    }
+
+    /// <summary>
+    /// Determines whether two <see cref="Result"/> instances are equal.
+    /// </summary>
+    public static bool operator ==(Result left, Result right) => left.Equals(right);
+
+    /// <summary>
+    /// Determines whether two <see cref="Result"/> instances are not equal.
+    /// </summary>
+    public static bool operator !=(Result left, Result right) => !left.Equals(right);
+
     /// <summary>
     /// Represents the state of a <see cref="Result"/>.
     /// </summary>
@@ -362,7 +413,7 @@ public readonly struct Result : IResult, ISerializable
 /// </summary>
 /// <typeparam name="T">The value type.</typeparam>
 [StructLayout(LayoutKind.Sequential), Serializable]
-public readonly struct Result<T> : IResult<T>, ISerializable
+public readonly struct Result<T> : IResult<T>, ISerializable, IEquatable<Result<T>>
 {
     private readonly T? _value;
     private readonly string? _message;
@@ -467,6 +518,13 @@ public readonly struct Result<T> : IResult<T>, ISerializable
     public static explicit operator Result(Result<T> result) => Result.ForwardFail(result);
 
     /// <summary>
+    /// Implicitly converts a value to a success <see cref="Result{T}"/>.
+    /// </summary>
+    /// <param name="value">The value.</param>
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static implicit operator Result<T>(T value) => new Result<T>(value);
+
+    /// <summary>
     /// Returns a string representation of the result.
     /// </summary>
     /// <returns>A string describing the result.</returns>
@@ -502,6 +560,57 @@ public readonly struct Result<T> : IResult<T>, ISerializable
         info.AddValue(nameof(Message), Message);
         info.AddValue(nameof(Exception), Exception, typeof(Exception));
     }
+
+    /// <inheritdoc/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool Equals(Result<T> other)
+    {
+        if (IsSuccess)
+        {
+            return other.IsSuccess && EqualityComparer<T>.Default.Equals(_value!, other._value!);
+        }
+
+        if (IsValidationFault)
+        {
+            return other.IsValidationFault && _message == other._message;
+        }
+
+        if (IsException)
+        {
+            return other.IsException && ReferenceEquals(_exception, other._exception);
+        }
+
+        return false;
+    }
+
+    /// <inheritdoc/>
+    public override bool Equals(object? obj) => obj is Result<T> other && Equals(other);
+
+    /// <inheritdoc/>
+    public override int GetHashCode()
+    {
+        if (IsSuccess)
+        {
+            return _value is not null ? EqualityComparer<T>.Default.GetHashCode(_value) : 0;
+        }
+
+        if (IsValidationFault)
+        {
+            return _message!.GetHashCode();
+        }
+
+        return _exception!.GetHashCode();
+    }
+
+    /// <summary>
+    /// Determines whether two <see cref="Result{T}"/> instances are equal.
+    /// </summary>
+    public static bool operator ==(Result<T> left, Result<T> right) => left.Equals(right);
+
+    /// <summary>
+    /// Determines whether two <see cref="Result{T}"/> instances are not equal.
+    /// </summary>
+    public static bool operator !=(Result<T> left, Result<T> right) => !left.Equals(right);
 }
 
 /// <summary>
@@ -510,7 +619,7 @@ public readonly struct Result<T> : IResult<T>, ISerializable
 /// <typeparam name="TValue">The value type.</typeparam>
 /// <typeparam name="TError">The error type.</typeparam>
 [StructLayout(LayoutKind.Sequential), Serializable]
-public readonly struct Result<TValue, TError>
+public readonly struct Result<TValue, TError> : IEquatable<Result<TValue, TError>>
 {
     private readonly TValue? _value;
     private readonly TError? _error;
@@ -567,4 +676,59 @@ public readonly struct Result<TValue, TError>
     /// <returns>A failure result.</returns>
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Result<TValue, TError> Fail(TError error) => new Result<TValue, TError>(error);
+
+    /// <summary>
+    /// Implicitly converts a value to a success <see cref="Result{TValue, TError}"/>.
+    /// </summary>
+    /// <param name="value">The value.</param>
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static implicit operator Result<TValue, TError>(TValue value) => new Result<TValue, TError>(value);
+
+    /// <summary>
+    /// Implicitly converts an error to a failure <see cref="Result{TValue, TError}"/>.
+    /// </summary>
+    /// <param name="error">The error.</param>
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static implicit operator Result<TValue, TError>(TError error) => new Result<TValue, TError>(error);
+
+    /// <inheritdoc/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool Equals(Result<TValue, TError> other)
+    {
+        if (IsSuccess != other.IsSuccess)
+        {
+            return false;
+        }
+
+        if (IsSuccess)
+        {
+            return EqualityComparer<TValue>.Default.Equals(_value!, other._value!);
+        }
+
+        return EqualityComparer<TError>.Default.Equals(_error!, other._error!);
+    }
+
+    /// <inheritdoc/>
+    public override bool Equals(object? obj) => obj is Result<TValue, TError> other && Equals(other);
+
+    /// <inheritdoc/>
+    public override int GetHashCode()
+    {
+        if (IsSuccess)
+        {
+            return _value is not null ? EqualityComparer<TValue>.Default.GetHashCode(_value) : 0;
+        }
+
+        return _error is not null ? EqualityComparer<TError>.Default.GetHashCode(_error) : 0;
+    }
+
+    /// <summary>
+    /// Determines whether two <see cref="Result{TValue, TError}"/> instances are equal.
+    /// </summary>
+    public static bool operator ==(Result<TValue, TError> left, Result<TValue, TError> right) => left.Equals(right);
+
+    /// <summary>
+    /// Determines whether two <see cref="Result{TValue, TError}"/> instances are not equal.
+    /// </summary>
+    public static bool operator !=(Result<TValue, TError> left, Result<TValue, TError> right) => !left.Equals(right);
 }
