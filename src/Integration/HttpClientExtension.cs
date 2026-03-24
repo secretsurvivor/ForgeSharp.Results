@@ -245,7 +245,7 @@ public static class HttpClientExtension
     {
         if (!result.IsSuccess)
         {
-            return Result.ForwardFail<HttpResponseMessage>(result);
+            return result.As<HttpResponseMessage>();
         }
 
         if (!result.Value.IsSuccessStatusCode)
@@ -284,7 +284,7 @@ public static class HttpClientExtension
 
             if (!responseResult.IsSuccess)
             {
-                return Result.ForwardFail<HttpResponseMessage>(responseResult);
+                return responseResult.As<HttpResponseMessage>();
             }
 
             if (!responseResult.Value.IsSuccessStatusCode)
@@ -317,7 +317,7 @@ public static class HttpClientExtension
     {
         if (!result.IsSuccess)
         {
-            return Result.ForwardFail<T>(result);
+            return result.As<T>();
         }
 
         try
@@ -363,7 +363,7 @@ public static class HttpClientExtension
 
             if (!responseResult.IsSuccess)
             {
-                return Result.ForwardFail<T>(responseResult);
+                return responseResult.As<T>();
             }
 
             try
