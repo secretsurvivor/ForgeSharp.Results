@@ -23,7 +23,7 @@ public static class SelectExtension
     {
         var results = enumerableResult._results;
 
-        for (var i = 0; i < results.Length; i++)
+        for (int i = 0; i < results.Length; i++)
         {
             yield return selector(results[i]);
         }
@@ -44,7 +44,7 @@ public static class SelectExtension
     {
         var results = enumerableResult._results;
 
-        for (var i = 0; i < results.Length; i++)
+        for (int i = 0; i < results.Length; i++)
         {
             yield return selector(results[i]);
         }
@@ -66,7 +66,7 @@ public static class SelectExtension
             return Result.Ok(result.Value.Select(func));
         }
 
-        return Result.ForwardFail<IEnumerable<TResult>>(result);
+        return new Result<IEnumerable<TResult>>(result._message, result._exception);
     }
 
     /// <summary>
@@ -96,7 +96,7 @@ public static class SelectExtension
                 return Result.Ok(result.Value.Select(func));
             }
 
-            return Result.ForwardFail<IEnumerable<TResult>>(result);
+            return new Result<IEnumerable<TResult>>(result._message, result._exception);
         }
     }
 
@@ -181,7 +181,7 @@ public static class SelectExtension
                 return Result.Ok(result.Value.Select(func));
             }
 
-            return Result.ForwardFail<IEnumerable<TResult>>(result);
+            return new Result<IEnumerable<TResult>>(result._message, result._exception);
         }
     }
 #endif

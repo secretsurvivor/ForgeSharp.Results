@@ -19,11 +19,12 @@ public static class TapExtension
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Result Tap(this Result result, Action action)
     {
-        if (result.IsSuccess)
+        if (!result.IsSuccess)
         {
-            action();
+            return result;
         }
 
+        action();
         return result;
     }
 
@@ -37,11 +38,12 @@ public static class TapExtension
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Result<T> Tap<T>(this Result<T> result, Action<T> action)
     {
-        if (result.IsSuccess)
+        if (!result.IsSuccess)
         {
-            action(result.Value);
+            return result;
         }
 
+        action(result.Value);
         return result;
     }
 
@@ -56,11 +58,12 @@ public static class TapExtension
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Result<T, TError> Tap<T, TError>(this Result<T, TError> result, Action<T> action)
     {
-        if (result.IsSuccess)
+        if (!result.IsSuccess)
         {
-            action(result.Value);
+            return result;
         }
 
+        action(result.Value);
         return result;
     }
     #endregion
@@ -75,11 +78,12 @@ public static class TapExtension
     [DebuggerStepperBoundary]
     public static async Task<Result> TapAsync(this Result result, Func<Task> action)
     {
-        if (result.IsSuccess)
+        if (!result.IsSuccess)
         {
-            await action().ConfigureAwait(false);
+            return result;
         }
 
+        await action().ConfigureAwait(false);
         return result;
     }
 
@@ -93,11 +97,12 @@ public static class TapExtension
     [DebuggerStepperBoundary]
     public static async Task<Result<T>> TapAsync<T>(this Result<T> result, Func<T, Task> action)
     {
-        if (result.IsSuccess)
+        if (!result.IsSuccess)
         {
-            await action(result.Value).ConfigureAwait(false);
+            return result;
         }
 
+        await action(result.Value).ConfigureAwait(false);
         return result;
     }
 
@@ -112,11 +117,12 @@ public static class TapExtension
     [DebuggerStepperBoundary]
     public static async Task<Result<T, TError>> TapAsync<T, TError>(this Result<T, TError> result, Func<T, Task> action)
     {
-        if (result.IsSuccess)
+        if (!result.IsSuccess)
         {
-            await action(result.Value).ConfigureAwait(false);
+            return result;
         }
 
+        await action(result.Value).ConfigureAwait(false);
         return result;
     }
     #endregion
@@ -142,11 +148,12 @@ public static class TapExtension
         {
             var result = await resultTask.ConfigureAwait(false);
 
-            if (result.IsSuccess)
+            if (!result.IsSuccess)
             {
-                action();
+                return result;
             }
 
+            action();
             return result;
         }
     }
@@ -172,11 +179,12 @@ public static class TapExtension
         {
             var result = await resultTask.ConfigureAwait(false);
 
-            if (result.IsSuccess)
+            if (!result.IsSuccess)
             {
-                action(result.Value);
+                return result;
             }
 
+            action(result.Value);
             return result;
         }
     }
@@ -203,11 +211,12 @@ public static class TapExtension
         {
             var result = await resultTask.ConfigureAwait(false);
 
-            if (result.IsSuccess)
+            if (!result.IsSuccess)
             {
-                action(result.Value);
+                return result;
             }
 
+            action(result.Value);
             return result;
         }
     }
@@ -225,11 +234,12 @@ public static class TapExtension
     {
         var result = await resultTask.ConfigureAwait(false);
 
-        if (result.IsSuccess)
+        if (!result.IsSuccess)
         {
-            await action().ConfigureAwait(false);
+            return result;
         }
 
+        await action().ConfigureAwait(false);
         return result;
     }
 
@@ -245,11 +255,12 @@ public static class TapExtension
     {
         var result = await resultTask.ConfigureAwait(false);
 
-        if (result.IsSuccess)
+        if (!result.IsSuccess)
         {
-            await action(result.Value).ConfigureAwait(false);
+            return result;
         }
 
+        await action(result.Value).ConfigureAwait(false);
         return result;
     }
 
@@ -266,11 +277,12 @@ public static class TapExtension
     {
         var result = await resultTask.ConfigureAwait(false);
 
-        if (result.IsSuccess)
+        if (!result.IsSuccess)
         {
-            await action(result.Value).ConfigureAwait(false);
+            return result;
         }
 
+        await action(result.Value).ConfigureAwait(false);
         return result;
     }
     #endregion
@@ -286,11 +298,12 @@ public static class TapExtension
     [DebuggerStepperBoundary]
     public static async Task<Result> TapAsync(this Result result, Func<ValueTask> action)
     {
-        if (result.IsSuccess)
+        if (!result.IsSuccess)
         {
-            await action().ConfigureAwait(false);
+            return result;
         }
 
+        await action().ConfigureAwait(false);
         return result;
     }
 
@@ -304,11 +317,12 @@ public static class TapExtension
     [DebuggerStepperBoundary]
     public static async ValueTask<Result<T>> TapAsync<T>(this Result<T> result, Func<T, ValueTask> action)
     {
-        if (result.IsSuccess)
+        if (!result.IsSuccess)
         {
-            await action(result.Value).ConfigureAwait(false);
+            return result;
         }
 
+        await action(result.Value).ConfigureAwait(false);
         return result;
     }
 
@@ -332,11 +346,12 @@ public static class TapExtension
         {
             var result = await resultTask.ConfigureAwait(false);
 
-            if (result.IsSuccess)
+            if (!result.IsSuccess)
             {
-                action();
+                return result;
             }
 
+            action();
             return result;
         }
     }
@@ -362,11 +377,12 @@ public static class TapExtension
         {
             var result = await resultTask.ConfigureAwait(false);
 
-            if (result.IsSuccess)
+            if (!result.IsSuccess)
             {
-                action(result.Value);
+                return result;
             }
 
+            action(result.Value);
             return result;
         }
     }
@@ -382,11 +398,12 @@ public static class TapExtension
     {
         var result = await resultTask.ConfigureAwait(false);
 
-        if (result.IsSuccess)
+        if (!result.IsSuccess)
         {
-            await action().ConfigureAwait(false);
+            return result;
         }
 
+        await action().ConfigureAwait(false);
         return result;
     }
 
@@ -401,11 +418,12 @@ public static class TapExtension
     {
         var result = await resultTask.ConfigureAwait(false);
 
-        if (result.IsSuccess)
+        if (!result.IsSuccess)
         {
-            await action().ConfigureAwait(false);
+            return result;
         }
 
+        await action().ConfigureAwait(false);
         return result;
     }
 
@@ -421,11 +439,12 @@ public static class TapExtension
     {
         var result = await resultTask.ConfigureAwait(false);
 
-        if (result.IsSuccess)
+        if (!result.IsSuccess)
         {
-            await action(result.Value).ConfigureAwait(false);
+            return result;
         }
 
+        await action(result.Value).ConfigureAwait(false);
         return result;
     }
 
@@ -441,11 +460,12 @@ public static class TapExtension
     {
         var result = await resultTask.ConfigureAwait(false);
 
-        if (result.IsSuccess)
+        if (!result.IsSuccess)
         {
-            await action(result.Value).ConfigureAwait(false);
+            return result;
         }
 
+        await action(result.Value).ConfigureAwait(false);
         return result;
     }
 

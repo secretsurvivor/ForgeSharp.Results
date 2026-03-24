@@ -49,7 +49,7 @@ public readonly struct EnumerableResult
     /// <summary>
     /// Gets the ratio of successful results to total results (0.0 when the collection is empty).
     /// </summary>
-    public double SuccessRatio => _results.Length == 0 ? 0d : (double)_successCount / _results.Length;
+    public double SuccessRatio => _results.Length == 0 ? 0d : (double) _successCount / _results.Length;
 
     /// <summary>
     /// Gets the success percentage (0.0 to 100.0) computed from <see cref="SuccessRatio"/>.
@@ -268,7 +268,7 @@ public readonly struct EnumerableResult<T>
     /// <summary>
     /// Ratio of successes to total (0.0 if empty).
     /// </summary>
-    public double SuccessRatio => _results.Length == 0 ? 0d : (double)_successCount / _results.Length;
+    public double SuccessRatio => _results.Length == 0 ? 0d : (double) _successCount / _results.Length;
 
     /// <summary>
     /// Success ratio as a percentage (0.0–100.0).
@@ -400,15 +400,15 @@ public readonly struct EnumerableResult<T>
     /// Iterates the collection using a struct visitor, avoiding delegate allocations.
     /// </summary>
     /// <typeparam name="TVisitor">A struct implementing <see cref="IResultVisitor{T}"/>.</typeparam>
-    /// <param name="visiter">The visitor instance whose <see cref="IResultVisitor{T}.Visit(Result{T})"/> method will be called for each item.</param>
+    /// <param name="visitor">The visitor instance whose <see cref="IResultVisitor{T}.Visit(Result{T})"/> method will be called for each item.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public readonly void ForEach<TVisitor>(TVisitor visiter) where TVisitor : struct, IResultVisitor<T>
+    public readonly void ForEach<TVisitor>(TVisitor visitor) where TVisitor : struct, IResultVisitor<T>
     {
         var list = _results;
 
         for (int i = 0; i < list.Length; i++)
         {
-            visiter.Visit(list[i]);
+            visitor.Visit(list[i]);
         }
     }
 }

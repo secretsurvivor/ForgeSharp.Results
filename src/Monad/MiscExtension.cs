@@ -18,14 +18,14 @@ public static class MiscExtension
     /// <param name="defaultValue">The default value to return if not successful.</param>
     /// <returns>The value or the default value.</returns>
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T GetOrDefault<T>(this IResult<T> result, T defaultValue = default!)
+    public static T GetOrDefault<T>(this Result<T> result, T defaultValue = default!)
     {
-        if (result.IsSuccess)
+        if (!result.IsSuccess)
         {
-            return result.Value;
+            return defaultValue;
         }
 
-        return defaultValue;
+        return result.Value;
     }
 
     /// <summary>
@@ -68,12 +68,12 @@ public static class MiscExtension
         {
             var result = await resultTask.ConfigureAwait(false);
 
-            if (result.IsSuccess)
+            if (!result.IsSuccess)
             {
-                return result.Value;
+                return defaultValue;
             }
 
-            return defaultValue;
+            return result.Value;
         }
     }
 
@@ -99,12 +99,12 @@ public static class MiscExtension
         {
             var result = await resultTask.ConfigureAwait(false);
 
-            if (result.IsSuccess)
+            if (!result.IsSuccess)
             {
-                return result.Value;
+                return defaultValue;
             }
 
-            return defaultValue;
+            return result.Value;
         }
     }
 
@@ -116,19 +116,19 @@ public static class MiscExtension
     /// <returns>The value.</returns>
     /// <exception cref="ArgumentException">Thrown if the result is not successful and not an exception.</exception>
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T GetOrThrow<T>(this IResult<T> result)
+    public static T GetOrThrow<T>(this Result<T> result)
     {
-        if (result.IsSuccess)
+        if (!result.IsSuccess)
         {
-            return result.Value;
-        }
+            if (!result.IsException)
+            {
+                throw new ArgumentException(result.Message);
+            }
 
-        if (result.IsException)
-        {
             ExceptionDispatchInfo.Capture(result.Exception).Throw();
         }
 
-        throw new ArgumentException(result.Message);
+        return result.Value;
     }
 
     /// <summary>
@@ -152,17 +152,17 @@ public static class MiscExtension
         {
             var result = await resultTask.ConfigureAwait(false);
 
-            if (result.IsSuccess)
+            if (!result.IsSuccess)
             {
-                return result.Value;
-            }
+                if (!result.IsException)
+                {
+                    throw new ArgumentException(result.Message);
+                }
 
-            if (result.IsException)
-            {
                 ExceptionDispatchInfo.Capture(result.Exception).Throw();
             }
 
-            throw new ArgumentException(result.Message);
+            return result.Value;
         }
     }
 
@@ -241,17 +241,17 @@ public static class MiscExtension
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Result<T> EnsureNotNull<T>(this Result<T?> result)
     {
-        if (result.IsSuccess)
+        if (!result.IsSuccess)
         {
-            if (result.Value is not null)
-            {
-                return Result.Ok(result.Value);
-            }
+            return new Result<T>(result._message, result._exception);
+        }
 
+        if (result.Value is null)
+        {
             return Result.Fail<T>($"Result<{typeof(T).Name}> is null");
         }
 
-        return Result.ForwardFail<T>(result);
+        return Result.Ok(result.Value);
     }
 
     /// <summary>
@@ -274,17 +274,17 @@ public static class MiscExtension
         {
             var result = await resultTask.ConfigureAwait(false);
 
-            if (result.IsSuccess)
+            if (!result.IsSuccess)
             {
-                if (result.Value is not null)
-                {
-                    return Result.Ok(result.Value);
-                }
+                return new Result<T>(result._message, result._exception);
+            }
 
+            if (result.Value is null)
+            {
                 return Result.Fail<T>($"Result<{typeof(T).Name}> is null");
             }
 
-            return Result.ForwardFail<T>(result);
+            return Result.Ok(result.Value);
         }
     }
 
@@ -297,7 +297,7 @@ public static class MiscExtension
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Result AsResult<T>(this Result<T> result)
     {
-        return (Result) result;
+        return new Result(result._message, result._exception);
     }
 
     /// <summary>
@@ -311,14 +311,15 @@ public static class MiscExtension
     {
         if (resultTask.TryGetResult(out var result))
         {
-            return Task.FromResult((Result) result);
+            return Task.FromResult(new Result(result._message, result._exception));
         }
 
         return Impl(resultTask);
 
         static async Task<Result> Impl(Task<Result<T>> resultTask)
         {
-            return (Result) await resultTask.ConfigureAwait(false);
+            var result = await resultTask.ConfigureAwait(false);
+            return new Result(result._message, result._exception);
         }
     }
 
@@ -330,14 +331,14 @@ public static class MiscExtension
     /// <param name="restoreFunc">The function to restore the result.</param>
     /// <returns>The original result if successful; otherwise, the restored result.</returns>
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Result<T> Restore<T>(this Result<T> result, Func<IResult, Result<T>> restoreFunc)
+    public static Result<T> Restore<T>(this Result<T> result, Func<Result, Result<T>> restoreFunc)
     {
-        if (result.IsSuccess)
+        if (!result.IsSuccess)
         {
-            return result;
+            return restoreFunc(new Result(result._message, result._exception));
         }
 
-        return restoreFunc(result);
+        return result;
     }
 
     /// <summary>
@@ -348,7 +349,7 @@ public static class MiscExtension
     /// <param name="restoreFunc">The function to restore the result.</param>
     /// <returns>The original result if successful; otherwise, the restored result.</returns>
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Task<Result<T>> RestoreAsync<T>(this Task<Result<T>> resultTask, Func<IResult, Result<T>> restoreFunc)
+    public static Task<Result<T>> RestoreAsync<T>(this Task<Result<T>> resultTask, Func<Result, Result<T>> restoreFunc)
     {
         if (resultTask.TryGetResult(out var result))
         {
@@ -357,16 +358,16 @@ public static class MiscExtension
 
         return Impl(resultTask, restoreFunc);
 
-        static async Task<Result<T>> Impl(Task<Result<T>> resultTask, Func<IResult, Result<T>> restoreFunc)
+        static async Task<Result<T>> Impl(Task<Result<T>> resultTask, Func<Result, Result<T>> restoreFunc)
         {
             var result = await resultTask.ConfigureAwait(false);
 
-            if (result.IsSuccess)
+            if (!result.IsSuccess)
             {
-                return result;
+                return restoreFunc(new Result(result._message, result._exception));
             }
 
-            return restoreFunc(result);
+            return result;
         }
     }
 
@@ -378,16 +379,16 @@ public static class MiscExtension
     /// <param name="restoreFunc">The asynchronous function to restore the result.</param>
     /// <returns>The original result if successful; otherwise, the restored result.</returns>
     [DebuggerStepperBoundary]
-    public static async Task<Result<T>> RestoreAsync<T>(this Task<Result<T>> resultTask, Func<IResult, Task<Result<T>>> restoreFunc)
+    public static async Task<Result<T>> RestoreAsync<T>(this Task<Result<T>> resultTask, Func<Result, Task<Result<T>>> restoreFunc)
     {
         var result = await resultTask.ConfigureAwait(false);
 
-        if (result.IsSuccess)
+        if (!result.IsSuccess)
         {
-            return result;
+            return await restoreFunc(new Result(result._message, result._exception)).ConfigureAwait(false);
         }
 
-        return await restoreFunc(result).ConfigureAwait(false);
+        return result;
     }
 
 #if NETSTANDARD2_1_OR_GREATER || NET6_0_OR_GREATER
@@ -413,12 +414,12 @@ public static class MiscExtension
         {
             var result = await resultTask.ConfigureAwait(false);
 
-            if (result.IsSuccess)
+            if (!result.IsSuccess)
             {
-                return result.Value;
+                return defaultValue;
             }
 
-            return defaultValue;
+            return result.Value;
         }
     }
 
@@ -443,17 +444,17 @@ public static class MiscExtension
         {
             var result = await resultTask.ConfigureAwait(false);
 
-            if (result.IsSuccess)
+            if (!result.IsSuccess)
             {
-                return result.Value;
-            }
+                if (!result.IsException)
+                {
+                    throw new ArgumentException(result.Message);
+                }
 
-            if (result.IsException)
-            {
                 ExceptionDispatchInfo.Capture(result.Exception).Throw();
             }
 
-            throw new ArgumentException(result.Message);
+            return result.Value;
         }
     }
 
@@ -485,7 +486,7 @@ public static class MiscExtension
     /// <param name="resultTask">The result value task.</param>
     /// <returns>True if successful; otherwise, false.</returns>
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ValueTask<bool> IsSuccess<T>(this ValueTask<Result<T>> resultTask)
+    public static ValueTask<bool> IsSuccessAsync<T>(this ValueTask<Result<T>> resultTask)
     {
         if (resultTask.TryGetResult(out var result))
         {
@@ -520,17 +521,17 @@ public static class MiscExtension
         {
             var result = await resultTask.ConfigureAwait(false);
 
-            if (result.IsSuccess)
+            if (!result.IsSuccess)
             {
-                if (result.Value is not null)
-                {
-                    return Result.Ok(result.Value);
-                }
+                return new Result<T>(result._message, result._exception);
+            }
 
+            if (result.Value is null)
+            {
                 return Result.Fail<T>($"Result<{typeof(T).Name}> is null");
             }
 
-            return Result.ForwardFail<T>(result);
+            return Result.Ok(result.Value);
         }
     }
 
@@ -545,14 +546,15 @@ public static class MiscExtension
     {
         if (resultTask.TryGetResult(out var result))
         {
-            return AsyncHelper.CreateValueTask((Result) result);
+            return AsyncHelper.CreateValueTask(new Result(result._message, result._exception));
         }
 
         return Impl(resultTask);
 
         static async ValueTask<Result> Impl(ValueTask<Result<T>> resultTask)
         {
-            return (Result) await resultTask.ConfigureAwait(false);
+            var result = await resultTask.ConfigureAwait(false);
+            return new Result(result._message, result._exception);
         }
     }
 
@@ -585,14 +587,31 @@ public static class MiscExtension
     {
         var item = source.FirstOrDefault(predicate);
 
-        if (item != null)
-        {
-            return Result.Ok(item);
-        }
-        else
+        if (item is null)
         {
             return Result.Fail<T>(errorMessage);
         }
+
+        return Result.Ok(item);
+    }
+
+    /// <summary>
+    /// Returns the first element as a Result, failing if the sequence is empty.
+    /// </summary>
+    /// <typeparam name="T">The value type.</typeparam>
+    /// <param name="source">The sequence to search.</param>
+    /// <param name="errorMessage">The error message to use if no element is found.</param>
+    /// <returns>The first element, or a failed result.</returns>
+    public static Result<T> FirstOrResult<T>(this IEnumerable<T> source, string errorMessage = "No matching element found.")
+    {
+        var item = source.FirstOrDefault();
+
+        if (item is null)
+        {
+            return Result.Fail<T>(errorMessage);
+        }
+
+        return Result.Ok(item);
     }
 
     /// <summary>
@@ -603,16 +622,16 @@ public static class MiscExtension
     /// <param name="value">The value if successful; otherwise, <c>default(T)</c>.</param>
     /// <returns><c>true</c> if successful; otherwise, <c>false</c>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), DebuggerStepperBoundary]
-    public static bool TryGetValue<T>(this IResult<T> result, out T value)
+    public static bool TryGetValue<T>(this Result<T> result, out T value)
     {
-        if (result.IsSuccess)
+        if (!result.IsSuccess)
         {
-            value = result.Value;
-            return true;
+            value = default!;
+            return false;
         }
 
-        value = default!;
-        return false;
+        value = result.Value;
+        return true;
     }
 
     /// <summary>

@@ -1,3 +1,4 @@
+using ForgeSharp.Results.Infrastructure;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
@@ -19,12 +20,12 @@ public static class OptionsMapExtension
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Options<TResult> Map<T, TResult>(this Options<T> option, Func<T, TResult> func)
     {
-        if (option.HasValue)
+        if (!option.HasValue)
         {
-            return Options<TResult>.Some(func(option.Value));
+            return Options<TResult>.None();
         }
 
-        return Options<TResult>.None();
+        return Options<TResult>.Some(func(option.Value));
     }
 
     /// <summary>
@@ -36,10 +37,26 @@ public static class OptionsMapExtension
     /// <param name="func">The transformation function to apply if the option has a value.</param>
     /// <returns>A new option with the transformed value as a task, or <see cref="Options{T}.None()"/> if the input option has no value.</returns>
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static async Task<Options<TResult>> MapAsync<T, TResult>(this Task<Options<T>> optionTask, Func<T, TResult> func)
+    public static Task<Options<TResult>> MapAsync<T, TResult>(this Task<Options<T>> optionTask, Func<T, TResult> func)
     {
-        var option = await optionTask.ConfigureAwait(false);
-        return option.Map(func);
+        if (optionTask.TryGetResult(out var option))
+        {
+            return Task.FromResult(Map(option, func));
+        }
+
+        return Impl(optionTask, func);
+
+        static async Task<Options<TResult>> Impl(Task<Options<T>> optionTask, Func<T, TResult> func)
+        {
+            var option = await optionTask.ConfigureAwait(false);
+
+            if (!option.HasValue)
+            {
+                return Options<TResult>.None();
+            }
+
+            return Options<TResult>.Some(func(option.Value));
+        }
     }
 
     /// <summary>
@@ -55,12 +72,12 @@ public static class OptionsMapExtension
     {
         var option = await optionTask.ConfigureAwait(false);
 
-        if (option.HasValue)
+        if (!option.HasValue)
         {
-            var result = await funcAsync(option.Value).ConfigureAwait(false);
-            return Options<TResult>.Some(result);
+            return Options<TResult>.None();
         }
 
-        return Options<TResult>.None();
+        var result = await funcAsync(option.Value).ConfigureAwait(false);
+        return Options<TResult>.Some(result);
     }
 }

@@ -7,7 +7,7 @@ namespace ForgeSharp.Results.Monad;
 /// LINQ query syntax support for <see cref="IPipeline{T}"/> and <see cref="IAsyncPipeline{T}"/>.
 /// </summary>
 [EditorBrowsable(EditorBrowsableState.Never)]
-public static class LinqExtention
+public static class LinqExtension
 {
     /// <summary>
     /// LINQ <c>select</c> support for sync pipelines.
@@ -15,11 +15,10 @@ public static class LinqExtention
     [EditorBrowsable(EditorBrowsableState.Never), DebuggerStepperBoundary]
     public static IPipeline<TResult> Select<T, TResult>(this IPipeline<T> pipeline, Func<T, TResult> selector)
     {
-        return Pipeline.Create(() =>
-        {
+        return Pipeline.Create(() => {
             var result = pipeline.Execute();
 
-            return result.IsSuccess ? Result.Ok(selector(result.Value)) : Result.ForwardFail<TResult>(result);
+            return result.IsSuccess ? Result.Ok(selector(result.Value)) : result.As<TResult>();
         });
     }
 
@@ -29,8 +28,7 @@ public static class LinqExtention
     [EditorBrowsable(EditorBrowsableState.Never), DebuggerStepperBoundary]
     public static IPipeline<T> Where<T>(this IPipeline<T> pipeline, Func<T, bool> predicate)
     {
-        return Pipeline.Create(() =>
-        {
+        return Pipeline.Create(() => {
             var result = pipeline.Execute();
 
             if (!result.IsSuccess)
@@ -51,20 +49,19 @@ public static class LinqExtention
         Func<T, IPipeline<TIntermediate>> selector,
         Func<T, TIntermediate, TResult> resultSelector)
     {
-        return Pipeline.Create(() =>
-        {
+        return Pipeline.Create(() => {
             var result = pipeline.Execute();
 
             if (!result.IsSuccess)
             {
-                return Result.ForwardFail<TResult>(result);
+                return result.As<TResult>();
             }
 
             var intermediate = selector(result.Value).Execute();
 
             if (!intermediate.IsSuccess)
             {
-                return Result.ForwardFail<TResult>(intermediate);
+                return intermediate.As<TResult>();
             }
 
             return Result.Ok(resultSelector(result.Value, intermediate.Value));
@@ -77,11 +74,10 @@ public static class LinqExtention
     [EditorBrowsable(EditorBrowsableState.Never), DebuggerStepperBoundary]
     public static IAsyncPipeline<TResult> Select<T, TResult>(this IAsyncPipeline<T> pipeline, Func<T, TResult> selector)
     {
-        return Pipeline.Create<TResult>(async () =>
-        {
+        return Pipeline.Create<TResult>(async () => {
             var result = await pipeline.ExecuteAsync().ConfigureAwait(false);
 
-            return result.IsSuccess ? Result.Ok(selector(result.Value)) : Result.ForwardFail<TResult>(result);
+            return result.IsSuccess ? Result.Ok(selector(result.Value)) : result.As<TResult>();
         });
     }
 
@@ -91,8 +87,7 @@ public static class LinqExtention
     [EditorBrowsable(EditorBrowsableState.Never), DebuggerStepperBoundary]
     public static IAsyncPipeline<T> Where<T>(this IAsyncPipeline<T> pipeline, Func<T, bool> predicate)
     {
-        return Pipeline.Create<T>(async () =>
-        {
+        return Pipeline.Create<T>(async () => {
             var result = await pipeline.ExecuteAsync().ConfigureAwait(false);
 
             if (!result.IsSuccess)
@@ -113,20 +108,19 @@ public static class LinqExtention
         Func<T, IAsyncPipeline<TIntermediate>> selector,
         Func<T, TIntermediate, TResult> resultSelector)
     {
-        return Pipeline.Create<TResult>(async () =>
-        {
+        return Pipeline.Create<TResult>(async () => {
             var result = await pipeline.ExecuteAsync().ConfigureAwait(false);
 
             if (!result.IsSuccess)
             {
-                return Result.ForwardFail<TResult>(result);
+                return result.As<TResult>();
             }
 
             var intermediate = await selector(result.Value).ExecuteAsync().ConfigureAwait(false);
 
             if (!intermediate.IsSuccess)
             {
-                return Result.ForwardFail<TResult>(intermediate);
+                return intermediate.As<TResult>();
             }
 
             return Result.Ok(resultSelector(result.Value, intermediate.Value));
@@ -142,20 +136,19 @@ public static class LinqExtention
         Func<T, IAsyncPipeline<TIntermediate>> selector,
         Func<T, TIntermediate, TResult> resultSelector)
     {
-        return Pipeline.Create<TResult>(async () =>
-        {
+        return Pipeline.Create<TResult>(async () => {
             var result = pipeline.Execute();
 
             if (!result.IsSuccess)
             {
-                return Result.ForwardFail<TResult>(result);
+                return result.As<TResult>();
             }
 
             var intermediate = await selector(result.Value).ExecuteAsync().ConfigureAwait(false);
 
             if (!intermediate.IsSuccess)
             {
-                return Result.ForwardFail<TResult>(intermediate);
+                return intermediate.As<TResult>();
             }
 
             return Result.Ok(resultSelector(result.Value, intermediate.Value));
@@ -171,20 +164,19 @@ public static class LinqExtention
         Func<T, IPipeline<TIntermediate>> selector,
         Func<T, TIntermediate, TResult> resultSelector)
     {
-        return Pipeline.Create<TResult>(async () =>
-        {
+        return Pipeline.Create<TResult>(async () => {
             var result = await pipeline.ExecuteAsync().ConfigureAwait(false);
 
             if (!result.IsSuccess)
             {
-                return Result.ForwardFail<TResult>(result);
+                return result.As<TResult>();
             }
 
             var intermediate = selector(result.Value).Execute();
 
             if (!intermediate.IsSuccess)
             {
-                return Result.ForwardFail<TResult>(intermediate);
+                return intermediate.As<TResult>();
             }
 
             return Result.Ok(resultSelector(result.Value, intermediate.Value));
@@ -200,13 +192,12 @@ public static class LinqExtention
         Func<T, Task<IAsyncPipeline<TIntermediate>>> selector,
         Func<T, TIntermediate, TResult> resultSelector)
     {
-        return Pipeline.Create<TResult>(async () =>
-        {
+        return Pipeline.Create<TResult>(async () => {
             var result = await pipeline.ExecuteAsync().ConfigureAwait(false);
 
             if (!result.IsSuccess)
             {
-                return Result.ForwardFail<TResult>(result);
+                return result.As<TResult>();
             }
 
             var intermediatePipeline = await selector(result.Value).ConfigureAwait(false);
@@ -214,7 +205,7 @@ public static class LinqExtention
 
             if (!intermediate.IsSuccess)
             {
-                return Result.ForwardFail<TResult>(intermediate);
+                return intermediate.As<TResult>();
             }
 
             return Result.Ok(resultSelector(result.Value, intermediate.Value));
@@ -230,13 +221,12 @@ public static class LinqExtention
         Func<T, Task<IPipeline<TIntermediate>>> selector,
         Func<T, TIntermediate, TResult> resultSelector)
     {
-        return Pipeline.Create<TResult>(async () =>
-        {
+        return Pipeline.Create<TResult>(async () => {
             var result = await pipeline.ExecuteAsync().ConfigureAwait(false);
 
             if (!result.IsSuccess)
             {
-                return Result.ForwardFail<TResult>(result);
+                return result.As<TResult>();
             }
 
             var intermediatePipeline = await selector(result.Value).ConfigureAwait(false);
@@ -244,7 +234,7 @@ public static class LinqExtention
 
             if (!intermediate.IsSuccess)
             {
-                return Result.ForwardFail<TResult>(intermediate);
+                return intermediate.As<TResult>();
             }
 
             return Result.Ok(resultSelector(result.Value, intermediate.Value));
@@ -260,13 +250,12 @@ public static class LinqExtention
         Func<T, Task<IAsyncPipeline<TIntermediate>>> selector,
         Func<T, TIntermediate, TResult> resultSelector)
     {
-        return Pipeline.Create<TResult>(async () =>
-        {
+        return Pipeline.Create<TResult>(async () => {
             var result = pipeline.Execute();
 
             if (!result.IsSuccess)
             {
-                return Result.ForwardFail<TResult>(result);
+                return result.As<TResult>();
             }
 
             var intermediatePipeline = await selector(result.Value).ConfigureAwait(false);
@@ -274,7 +263,7 @@ public static class LinqExtention
 
             if (!intermediate.IsSuccess)
             {
-                return Result.ForwardFail<TResult>(intermediate);
+                return intermediate.As<TResult>();
             }
 
             return Result.Ok(resultSelector(result.Value, intermediate.Value));
@@ -290,13 +279,12 @@ public static class LinqExtention
         Func<T, Task<IPipeline<TIntermediate>>> selector,
         Func<T, TIntermediate, TResult> resultSelector)
     {
-        return Pipeline.Create<TResult>(async () =>
-        {
+        return Pipeline.Create<TResult>(async () => {
             var result = pipeline.Execute();
 
             if (!result.IsSuccess)
             {
-                return Result.ForwardFail<TResult>(result);
+                return result.As<TResult>();
             }
 
             var intermediatePipeline = await selector(result.Value).ConfigureAwait(false);
@@ -304,7 +292,7 @@ public static class LinqExtention
 
             if (!intermediate.IsSuccess)
             {
-                return Result.ForwardFail<TResult>(intermediate);
+                intermediate.As<TResult>();
             }
 
             return Result.Ok(resultSelector(result.Value, intermediate.Value));

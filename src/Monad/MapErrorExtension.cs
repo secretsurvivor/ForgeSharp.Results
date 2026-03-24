@@ -22,12 +22,12 @@ public static class MapErrorExtension
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Result<TValue, TNewError> MapError<TValue, TError, TNewError>(this Result<TValue, TError> result, Func<TError, TNewError> mapError)
     {
-        if (result.IsSuccess)
+        if (!result.IsSuccess)
         {
-            return Result.Ok<TValue, TNewError>(result.Value);
+            return Result.Fail<TValue, TNewError>(mapError(result.Error));
         }
 
-        return Result.Fail<TValue, TNewError>(mapError(result.Error));
+        return Result.Ok<TValue, TNewError>(result.Value);
     }
     #endregion
 
@@ -44,12 +44,12 @@ public static class MapErrorExtension
     [DebuggerStepperBoundary]
     public static async Task<Result<TValue, TNewError>> MapErrorAsync<TValue, TError, TNewError>(this Result<TValue, TError> result, Func<TError, Task<TNewError>> mapError)
     {
-        if (result.IsSuccess)
+        if (!result.IsSuccess)
         {
-            return Result.Ok<TValue, TNewError>(result.Value);
+            return Result.Fail<TValue, TNewError>(await mapError(result.Error).ConfigureAwait(false));
         }
 
-        return Result.Fail<TValue, TNewError>(await mapError(result.Error).ConfigureAwait(false));
+        return Result.Ok<TValue, TNewError>(result.Value);
     }
     #endregion
 
@@ -77,12 +77,12 @@ public static class MapErrorExtension
         {
             var result = await resultTask.ConfigureAwait(false);
 
-            if (result.IsSuccess)
+            if (!result.IsSuccess)
             {
-                return Result.Ok<TValue, TNewError>(result.Value);
+                return Result.Fail<TValue, TNewError>(mapError(result.Error));
             }
 
-            return Result.Fail<TValue, TNewError>(mapError(result.Error));
+            return Result.Ok<TValue, TNewError>(result.Value);
         }
     }
     #endregion
@@ -102,12 +102,12 @@ public static class MapErrorExtension
     {
         var result = await resultTask.ConfigureAwait(false);
 
-        if (result.IsSuccess)
+        if (!result.IsSuccess)
         {
-            return Result.Ok<TValue, TNewError>(result.Value);
+            return Result.Fail<TValue, TNewError>(await mapError(result.Error).ConfigureAwait(false));
         }
 
-        return Result.Fail<TValue, TNewError>(await mapError(result.Error).ConfigureAwait(false));
+        return Result.Ok<TValue, TNewError>(result.Value);
     }
     #endregion
 
@@ -125,12 +125,12 @@ public static class MapErrorExtension
     [DebuggerStepperBoundary]
     public static async Task<Result<TValue, TNewError>> MapErrorAsync<TValue, TError, TNewError>(this Result<TValue, TError> result, Func<TError, ValueTask<TNewError>> mapError)
     {
-        if (result.IsSuccess)
+        if (!result.IsSuccess)
         {
-            return Result.Ok<TValue, TNewError>(result.Value);
+            return Result.Fail<TValue, TNewError>(await mapError(result.Error).ConfigureAwait(false));
         }
 
-        return Result.Fail<TValue, TNewError>(await mapError(result.Error).ConfigureAwait(false));
+        return Result.Ok<TValue, TNewError>(result.Value);
     }
 
     /// <summary>
@@ -156,12 +156,12 @@ public static class MapErrorExtension
         {
             var result = await resultTask.ConfigureAwait(false);
 
-            if (result.IsSuccess)
+            if (!result.IsSuccess)
             {
-                return Result.Ok<TValue, TNewError>(result.Value);
+                return Result.Fail<TValue, TNewError>(mapError(result.Error));
             }
 
-            return Result.Fail<TValue, TNewError>(mapError(result.Error));
+            return Result.Ok<TValue, TNewError>(result.Value);
         }
     }
 
@@ -179,12 +179,12 @@ public static class MapErrorExtension
     {
         var result = await resultTask.ConfigureAwait(false);
 
-        if (result.IsSuccess)
+        if (!result.IsSuccess)
         {
-            return Result.Ok<TValue, TNewError>(result.Value);
+            return Result.Fail<TValue, TNewError>(await mapError(result.Error).ConfigureAwait(false));
         }
 
-        return Result.Fail<TValue, TNewError>(await mapError(result.Error).ConfigureAwait(false));
+        return Result.Ok<TValue, TNewError>(result.Value);
     }
 
     /// <summary>
@@ -201,12 +201,12 @@ public static class MapErrorExtension
     {
         var result = await resultTask.ConfigureAwait(false);
 
-        if (result.IsSuccess)
+        if (!result.IsSuccess)
         {
-            return Result.Ok<TValue, TNewError>(result.Value);
+            return Result.Fail<TValue, TNewError>(await mapError(result.Error).ConfigureAwait(false));
         }
 
-        return Result.Fail<TValue, TNewError>(await mapError(result.Error).ConfigureAwait(false));
+        return Result.Ok<TValue, TNewError>(result.Value);
     }
 
 #endif

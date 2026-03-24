@@ -23,7 +23,7 @@ public interface IAsyncPipeline
     /// Executes the pipeline asynchronously.
     /// </summary>
     /// <returns>The execution result.</returns>
-    public Task<Result> ExecuteAsync();
+    public Task<Result> ExecuteAsync(CancellationToken cancellationToken = default);
 }
 
 /// <summary>
@@ -49,13 +49,41 @@ public interface IAsyncPipeline<T>
     /// Executes the pipeline asynchronously.
     /// </summary>
     /// <returns>The execution result.</returns>
-    public Task<Result<T>> ExecuteAsync();
+    public Task<Result<T>> ExecuteAsync(CancellationToken cancellationToken = default);
+}
+
+/// <summary>
+/// A pipeline that produces a <see cref="Result{T, TError}"/> with a custom error type.
+/// </summary>
+/// <typeparam name="T">The value type.</typeparam>
+/// <typeparam name="TError">The error type.</typeparam>
+public interface IPipeline<T, TError>
+{
+    /// <summary>
+    /// Executes the pipeline.
+    /// </summary>
+    /// <returns>The execution result.</returns>
+    public Result<T, TError> Execute();
+}
+
+/// <summary>
+/// Async counterpart of <see cref="IPipeline{T, TError}"/>.
+/// </summary>
+/// <typeparam name="T">The value type.</typeparam>
+/// <typeparam name="TError">The error type.</typeparam>
+public interface IAsyncPipeline<T, TError>
+{
+    /// <summary>
+    /// Executes the pipeline asynchronously.
+    /// </summary>
+    /// <returns>The execution result.</returns>
+    public Task<Result<T, TError>> ExecuteAsync(CancellationToken cancellationToken = default);
 }
 
 /// <summary>
 /// Default <see cref="IPipeline"/> implementation.
 /// </summary>
-public readonly struct Pipeline : IPipeline
+public sealed class Pipeline : IPipeline
 {
     internal readonly Func<Result> _pipeline;
 
@@ -116,6 +144,30 @@ public readonly struct Pipeline : IPipeline
     }
 
     /// <summary>
+    /// Creates a new <see cref="IPipeline{T, TError}"/> from the specified delegate.
+    /// </summary>
+    /// <typeparam name="T">The value type.</typeparam>
+    /// <typeparam name="TError">The error type.</typeparam>
+    /// <param name="pipeline">The pipeline delegate.</param>
+    /// <returns>An <see cref="IPipeline{T, TError}"/> instance.</returns>
+    public static IPipeline<T, TError> Create<T, TError>(Func<Result<T, TError>> pipeline)
+    {
+        return new Pipeline<T, TError>(pipeline);
+    }
+
+    /// <summary>
+    /// Creates a new <see cref="IAsyncPipeline{T, TError}"/> from the specified delegate.
+    /// </summary>
+    /// <typeparam name="T">The value type.</typeparam>
+    /// <typeparam name="TError">The error type.</typeparam>
+    /// <param name="pipeline">The asynchronous pipeline delegate.</param>
+    /// <returns>An <see cref="IAsyncPipeline{T, TError}"/> instance.</returns>
+    public static IAsyncPipeline<T, TError> Create<T, TError>(Func<Task<Result<T, TError>>> pipeline)
+    {
+        return new AsyncPipeline<T, TError>(pipeline);
+    }
+
+    /// <summary>
     /// Executes the pipeline and returns a <see cref="Result"/>.
     /// </summary>
     /// <returns>The result of the pipeline execution.</returns>
@@ -125,7 +177,7 @@ public readonly struct Pipeline : IPipeline
     }
 }
 
-internal readonly struct AsyncPipeline : IAsyncPipeline
+internal sealed class AsyncPipeline : IAsyncPipeline
 {
     internal readonly Func<Task<Result>> _pipeline;
 
@@ -134,13 +186,13 @@ internal readonly struct AsyncPipeline : IAsyncPipeline
         _pipeline = pipeline ?? throw new ArgumentNullException(nameof(pipeline));
     }
 
-    public Task<Result> ExecuteAsync()
+    public Task<Result> ExecuteAsync(CancellationToken cancellationToken = default)
     {
         return _pipeline.Invoke();
     }
 }
 
-internal readonly struct Pipeline<T> : IPipeline<T>
+internal sealed class Pipeline<T> : IPipeline<T>
 {
     internal readonly Func<Result<T>> _pipeline;
 
@@ -155,7 +207,7 @@ internal readonly struct Pipeline<T> : IPipeline<T>
     }
 }
 
-internal readonly struct AsyncPipeline<T> : IAsyncPipeline<T>
+internal sealed class AsyncPipeline<T> : IAsyncPipeline<T>
 {
     internal readonly Func<Task<Result<T>>> _pipeline;
 
@@ -164,7 +216,37 @@ internal readonly struct AsyncPipeline<T> : IAsyncPipeline<T>
         _pipeline = pipeline ?? throw new ArgumentNullException(nameof(pipeline));
     }
 
-    public Task<Result<T>> ExecuteAsync()
+    public Task<Result<T>> ExecuteAsync(CancellationToken cancellationToken = default)
+    {
+        return _pipeline.Invoke();
+    }
+}
+
+internal sealed class Pipeline<T, TError> : IPipeline<T, TError>
+{
+    internal readonly Func<Result<T, TError>> _pipeline;
+
+    internal Pipeline(Func<Result<T, TError>> pipeline)
+    {
+        _pipeline = pipeline ?? throw new ArgumentNullException(nameof(pipeline));
+    }
+
+    public Result<T, TError> Execute()
+    {
+        return _pipeline.Invoke();
+    }
+}
+
+internal sealed class AsyncPipeline<T, TError> : IAsyncPipeline<T, TError>
+{
+    internal readonly Func<Task<Result<T, TError>>> _pipeline;
+
+    internal AsyncPipeline(Func<Task<Result<T, TError>>> pipeline)
+    {
+        _pipeline = pipeline ?? throw new ArgumentNullException(nameof(pipeline));
+    }
+
+    public Task<Result<T, TError>> ExecuteAsync(CancellationToken cancellationToken = default)
     {
         return _pipeline.Invoke();
     }

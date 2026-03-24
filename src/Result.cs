@@ -7,56 +7,19 @@ using System.Runtime.Serialization;
 namespace ForgeSharp.Results;
 
 /// <summary>
-/// Common interface for all result types.
-/// </summary>
-public interface IResult
-{
-    /// <summary>
-    /// True if the operation succeeded.
-    /// </summary>
-    bool IsSuccess { get; }
-
-    /// <summary>
-    /// True if this is a validation fault.
-    /// </summary>
-    bool IsValidationFault { get; }
-
-    /// <summary>
-    /// True if this represents an exception.
-    /// </summary>
-    bool IsException { get; }
-
-    /// <summary>
-    /// The validation message.
-    /// </summary>
-    string Message { get; }
-
-    /// <summary>
-    /// The captured exception.
-    /// </summary>
-    Exception Exception { get; }
-}
-
-/// <summary>
-/// Extends <see cref="IResult"/> with a typed value.
-/// </summary>
-/// <typeparam name="T">The value type.</typeparam>
-public interface IResult<out T> : IResult
-{
-    /// <summary>
-    /// The result value.
-    /// </summary>
-    T Value { get; }
-}
-
-/// <summary>
 /// Non-generic result representing success or failure.
 /// </summary>
 [StructLayout(LayoutKind.Sequential), Serializable, ReadOnly(true)]
-public readonly struct Result : IResult, ISerializable, IEquatable<Result>
+public readonly struct Result : ISerializable, IEquatable<Result>
 {
-    private readonly string? _message;
-    private readonly Exception? _exception;
+    internal readonly string? _message;
+    internal readonly Exception? _exception;
+
+    internal Result(string? message, Exception? exception)
+    {
+        _message = message;
+        _exception = exception;
+    }
 
     /// <inheritdoc/>
     public bool IsSuccess => _message is null && _exception is null;
@@ -78,31 +41,14 @@ public readonly struct Result : IResult, ISerializable, IEquatable<Result>
     /// </summary>
     /// <param name="message">The validation fault message.</param>
     [DebuggerStepperBoundary]
-    internal Result(string message)
-    {
-        _message = message;
-    }
+    internal Result(string message) : this(message, null) { }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Result"/> struct with an exception.
     /// </summary>
     /// <param name="exception">The exception.</param>
     [DebuggerStepperBoundary]
-    internal Result(Exception exception)
-    {
-        _exception = exception;
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="Result"/> struct from another <see cref="IResult"/>.
-    /// </summary>
-    /// <param name="result">The result to copy.</param>
-    [DebuggerStepperBoundary]
-    internal Result(IResult result)
-    {
-        _message = result.Message;
-        _exception = result.Exception;
-    }
+    internal Result(Exception exception) : this(null, exception) { }
 
     /// <summary>
     /// Creates a success result.
@@ -173,21 +119,11 @@ public readonly struct Result : IResult, ISerializable, IEquatable<Result>
     public static Result<TValue, TError> Fail<TValue, TError>(TError error) => Result<TValue, TError>.Fail(error);
 
     /// <summary>
-    /// Propagates a failure into a new <see cref="Result"/>.
+    /// Converts this result into a <see cref="Result{T}"/>, carrying over the failure state.
     /// </summary>
-    /// <param name="result">The failed result to propagate.</param>
-    /// <returns>A new result carrying the same failure.</returns>
-    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Result ForwardFail(IResult result) => new Result(result);
-
-    /// <summary>
-    /// Propagates a failure into a new <see cref="Result{T}"/>.
-    /// </summary>
-    /// <typeparam name="T">The value type.</typeparam>
-    /// <param name="result">The failed result to propagate.</param>
-    /// <returns>A new result carrying the same failure.</returns>
-    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Result<T> ForwardFail<T>(IResult result) => Result<T>.ForwardFail(result);
+    /// <typeparam name="T">The target value type.</typeparam>
+    /// <returns>A new result with the same success/failure state.</returns>
+    public Result<T> As<T>() => new Result<T>(_message, _exception);
 
     /// <summary>
     /// Runs <paramref name="action"/> and returns any thrown exception as a failure.
@@ -413,14 +349,25 @@ public readonly struct Result : IResult, ISerializable, IEquatable<Result>
 /// </summary>
 /// <typeparam name="T">The value type.</typeparam>
 [StructLayout(LayoutKind.Sequential), Serializable]
-public readonly struct Result<T> : IResult<T>, ISerializable, IEquatable<Result<T>>
+public readonly struct Result<T> : ISerializable, IEquatable<Result<T>>
 {
-    private readonly T? _value;
-    private readonly string? _message;
-    private readonly Exception? _exception;
+    internal readonly T? _value;
+    internal readonly string? _message;
+    internal readonly Exception? _exception;
+
+    internal Result(T? value)
+    {
+        _value = value;
+    }
+
+    internal Result(string? message, Exception? exception)
+    {
+        _message = message;
+        _exception = exception;
+    }
 
     /// <inheritdoc/>
-    public bool IsSuccess => _message is null && _exception is null;
+    public bool IsSuccess => _value is not null && _message is null && _exception is null;
 
     /// <inheritdoc/>
     public bool IsValidationFault => _message is not null;
@@ -438,45 +385,18 @@ public readonly struct Result<T> : IResult<T>, ISerializable, IEquatable<Result<
     public T Value => _value!;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="Result{T}"/> struct with a value.
-    /// </summary>
-    /// <param name="value">The value.</param>
-    [DebuggerStepperBoundary]
-    internal Result(T value)
-    {
-        _value = value;
-    }
-
-    /// <summary>
     /// Initializes a new instance of the <see cref="Result{T}"/> struct with a validation fault message.
     /// </summary>
     /// <param name="message">The validation fault message.</param>
     [DebuggerStepperBoundary]
-    internal Result(string message)
-    {
-        _message = message;
-    }
+    internal Result(string message) : this(message, null) { }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Result{T}"/> struct with an exception.
     /// </summary>
     /// <param name="exception">The exception.</param>
     [DebuggerStepperBoundary]
-    internal Result(Exception exception)
-    {
-        _exception = exception;
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="Result{T}"/> struct from another <see cref="IResult"/>.
-    /// </summary>
-    /// <param name="result">The result to copy.</param>
-    [DebuggerStepperBoundary]
-    internal Result(IResult result)
-    {
-        _message = result.Message;
-        _exception = result.Exception;
-    }
+    internal Result(Exception exception) : this(null, exception) { }
 
     /// <summary>
     /// Creates a success result with a value.
@@ -503,26 +423,24 @@ public readonly struct Result<T> : IResult<T>, ISerializable, IEquatable<Result<
     public static Result<T> Fail(Exception exception) => new Result<T>(exception);
 
     /// <summary>
-    /// Propagates a failure into a new <see cref="Result{T}"/>.
-    /// </summary>
-    /// <param name="result">The failed result to propagate.</param>
-    /// <returns>A new result carrying the same failure.</returns>
-    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Result<T> ForwardFail(IResult result) => new Result<T>(result);
-
-    /// <summary>
-    /// Converts to a non-generic <see cref="Result"/>, preserving the failure state.
-    /// </summary>
-    /// <param name="result">The result to convert.</param>
-    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static explicit operator Result(Result<T> result) => Result.ForwardFail(result);
-
-    /// <summary>
     /// Implicitly converts a value to a success <see cref="Result{T}"/>.
     /// </summary>
     /// <param name="value">The value.</param>
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Result<T>(T value) => new Result<T>(value);
+
+    /// <summary>
+    /// Explicitly converts a <see cref="Result{T}"/> to a non-generic <see cref="Result"/>, dropping the value.
+    /// </summary>
+    /// <param name="value">The typed result to convert.</param>
+    public static explicit operator Result(Result<T> value) => new Result(value._message, value._exception);
+
+    /// <summary>
+    /// Converts this result into a <see cref="Result{T}"/> of a different type, carrying over the failure state.
+    /// </summary>
+    /// <typeparam name="U">The target value type.</typeparam>
+    /// <returns>A new result with the same success/failure state.</returns>
+    public Result<U> As<U>() => new Result<U>(_message, _exception);
 
     /// <summary>
     /// Returns a string representation of the result.
@@ -621,13 +539,13 @@ public readonly struct Result<T> : IResult<T>, ISerializable, IEquatable<Result<
 [StructLayout(LayoutKind.Sequential), Serializable]
 public readonly struct Result<TValue, TError> : IEquatable<Result<TValue, TError>>
 {
-    private readonly TValue? _value;
-    private readonly TError? _error;
+    internal readonly TValue? _value;
+    internal readonly TError? _error;
 
     /// <summary>
     /// True if the operation succeeded.
     /// </summary>
-    public bool IsSuccess { [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
+    public bool IsSuccess => _value is not null && _error is null;
 
     /// <summary>
     /// The success value. Only valid when <see cref="IsSuccess"/> is true.
@@ -646,7 +564,6 @@ public readonly struct Result<TValue, TError> : IEquatable<Result<TValue, TError
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal Result(TValue value)
     {
-        IsSuccess = true;
         _value = value;
     }
 
@@ -657,7 +574,6 @@ public readonly struct Result<TValue, TError> : IEquatable<Result<TValue, TError
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal Result(TError error)
     {
-        IsSuccess = false;
         _error = error;
     }
 

@@ -22,7 +22,7 @@ public static class FlattenExtension
             return result.Value;
         }
 
-        return Result.ForwardFail(result);
+        return new Result(result._message, result._exception);
     }
 
     /// <summary>
@@ -39,7 +39,7 @@ public static class FlattenExtension
             return result.Value;
         }
 
-        return Result.ForwardFail<T>(result);
+        return result.As<T>();
     }
 
     /// <summary>
@@ -53,7 +53,7 @@ public static class FlattenExtension
     {
         if (resultTask.TryGetResult(out var result))
         {
-            Task.FromResult(Flatten(result));
+            return Task.FromResult(Flatten(result));
         }
 
         return Impl(resultTask);
@@ -67,7 +67,7 @@ public static class FlattenExtension
                 return result.Value;
             }
 
-            return Result.ForwardFail<T>(result);
+            return result.As<T>();
         }
     }
 
@@ -95,7 +95,7 @@ public static class FlattenExtension
                 return result.Value;
             }
 
-            return (Result)result;
+            return (Result) result;
         }
     }
 
@@ -171,7 +171,7 @@ public static class FlattenExtension
                 return result.Value;
             }
 
-            return Result.ForwardFail<T>(result);
+            return result.As<T>();
         }
     }
 
@@ -199,7 +199,7 @@ public static class FlattenExtension
                 return result.Value;
             }
 
-            return (Result)result;
+            return (Result) result;
         }
     }
 

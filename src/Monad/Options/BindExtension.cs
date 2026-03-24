@@ -1,3 +1,4 @@
+using ForgeSharp.Results.Infrastructure;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
@@ -39,10 +40,26 @@ public static class OptionsBindExtension
     /// <param name="func">The function that returns a new option based on the value.</param>
     /// <returns>The result of applying the function as a task, or <see cref="Options{T}.None()"/> if the input option has no value.</returns>
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static async Task<Options<TResult>> BindAsync<T, TResult>(this Task<Options<T>> optionTask, Func<T, Options<TResult>> func)
+    public static Task<Options<TResult>> BindAsync<T, TResult>(this Task<Options<T>> optionTask, Func<T, Options<TResult>> func)
     {
-        var option = await optionTask.ConfigureAwait(false);
-        return option.Bind(func);
+        if (optionTask.TryGetResult(out var option))
+        {
+            return Task.FromResult(Bind(option, func));
+        }
+
+        return Impl(optionTask, func);
+
+        static async Task<Options<TResult>> Impl(Task<Options<T>> optionTask, Func<T, Options<TResult>> func)
+        {
+            var option = await optionTask.ConfigureAwait(false);
+
+            if (!option.HasValue)
+            {
+                return Options<TResult>.None();
+            }
+
+            return func(option.Value);
+        }
     }
 
     /// <summary>

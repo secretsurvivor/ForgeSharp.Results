@@ -1,3 +1,4 @@
+using ForgeSharp.Results.Infrastructure;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
@@ -37,10 +38,26 @@ public static class OptionsTapExtension
     /// <param name="action">The action to execute.</param>
     /// <returns>The original option as a task.</returns>
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static async Task<Options<T>> TapAsync<T>(this Task<Options<T>> optionTask, Action<T> action)
+    public static Task<Options<T>> TapAsync<T>(this Task<Options<T>> optionTask, Action<T> action)
     {
-        var option = await optionTask.ConfigureAwait(false);
-        return option.Tap(action);
+        if (optionTask.TryGetResult(out var option))
+        {
+            return Task.FromResult(Tap(option, action));
+        }
+
+        return Impl(optionTask, action);
+
+        static async Task<Options<T>> Impl(Task<Options<T>> optionTask, Action<T> action)
+        {
+            var option = await optionTask.ConfigureAwait(false);
+
+            if (option.HasValue)
+            {
+                action(option.Value);
+            }
+
+            return option;
+        }
     }
 
     /// <summary>

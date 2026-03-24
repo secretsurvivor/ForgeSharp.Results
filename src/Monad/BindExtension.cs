@@ -28,6 +28,42 @@ public static class BindExtension
     }
 
     /// <summary>
+    /// Binds the result to an action that returns a typed result.
+    /// </summary>
+    /// <typeparam name="T">The value type.</typeparam>
+    /// <param name="result">The result.</param>
+    /// <param name="action">The action to bind.</param>
+    /// <returns>The action result on success, or the forwarded failure.</returns>
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Result<T> Bind<T>(this Result result, Func<Result<T>> action)
+    {
+        if (!result.IsSuccess)
+        {
+            return result.As<T>();
+        }
+
+        return action();
+    }
+
+    /// <summary>
+    /// Binds a typed result to a function that returns a non-generic result.
+    /// </summary>
+    /// <typeparam name="T">The input value type.</typeparam>
+    /// <param name="result">The result.</param>
+    /// <param name="action">The function to bind.</param>
+    /// <returns>The action result on success, or the forwarded failure.</returns>
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Result Bind<T>(this Result<T> result, Func<T, Result> action)
+    {
+        if (!result.IsSuccess)
+        {
+            return new Result(result._message, result._exception);
+        }
+
+        return action(result.Value);
+    }
+
+    /// <summary>
     /// Binds a result to a function that transforms the value into a new result.
     /// </summary>
     /// <typeparam name="T">The input value type.</typeparam>
@@ -40,7 +76,7 @@ public static class BindExtension
     {
         if (!result.IsSuccess)
         {
-            return Result.ForwardFail<TResult>(result);
+            return result.As<TResult>();
         }
 
         return action(result.Value);
@@ -98,6 +134,66 @@ public static class BindExtension
     }
 
     /// <summary>
+    /// Binds an awaited result to a sync action that returns a typed result.
+    /// </summary>
+    /// <typeparam name="T">The value type.</typeparam>
+    /// <param name="resultTask">The result task.</param>
+    /// <param name="action">The action to bind.</param>
+    /// <returns>The action result on success, or the forwarded failure.</returns>
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Task<Result<T>> BindAsync<T>(this Task<Result> resultTask, Func<Result<T>> action)
+    {
+        if (resultTask.TryGetResult(out var result))
+        {
+            return Task.FromResult(Bind(result, action));
+        }
+
+        return Impl(resultTask, action);
+
+        static async Task<Result<T>> Impl(Task<Result> resultTask, Func<Result<T>> action)
+        {
+            var result = await resultTask.ConfigureAwait(false);
+
+            if (!result.IsSuccess)
+            {
+                return result.As<T>();
+            }
+
+            return action();
+        }
+    }
+
+    /// <summary>
+    /// Binds an awaited typed result to a sync function that returns a non-generic result.
+    /// </summary>
+    /// <typeparam name="T">The input value type.</typeparam>
+    /// <param name="resultTask">The result task.</param>
+    /// <param name="action">The function to bind.</param>
+    /// <returns>The action result on success, or the forwarded failure.</returns>
+    [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Task<Result> BindAsync<T>(this Task<Result<T>> resultTask, Func<T, Result> action)
+    {
+        if (resultTask.TryGetResult(out var result))
+        {
+            return Task.FromResult(Bind(result, action));
+        }
+
+        return Impl(resultTask, action);
+
+        static async Task<Result> Impl(Task<Result<T>> resultTask, Func<T, Result> action)
+        {
+            var result = await resultTask.ConfigureAwait(false);
+
+            if (!result.IsSuccess)
+            {
+                return new Result(result._message, result._exception);
+            }
+
+            return action(result.Value);
+        }
+    }
+
+    /// <summary>
     /// Binds an awaited result to a sync function. See <see cref="Bind{T, TResult}(Result{T}, Func{T, Result{TResult}})"/>.
     /// </summary>
     /// <typeparam name="T">The input value type.</typeparam>
@@ -121,7 +217,7 @@ public static class BindExtension
 
             if (!result.IsSuccess)
             {
-                return Result.ForwardFail<TResult>(result);
+                return result.As<TResult>();
             }
 
             return action(result.Value);
@@ -182,6 +278,46 @@ public static class BindExtension
     }
 
     /// <summary>
+    /// Binds an awaited result to an async action that returns a typed result.
+    /// </summary>
+    /// <typeparam name="T">The value type.</typeparam>
+    /// <param name="resultTask">The result task.</param>
+    /// <param name="action">The async action to bind.</param>
+    /// <returns>The action result on success, or the forwarded failure.</returns>
+    [DebuggerStepperBoundary]
+    public static async Task<Result<T>> BindAsync<T>(this Task<Result> resultTask, Func<Task<Result<T>>> action)
+    {
+        var result = await resultTask.ConfigureAwait(false);
+
+        if (!result.IsSuccess)
+        {
+            return result.As<T>();
+        }
+
+        return await action();
+    }
+
+    /// <summary>
+    /// Binds an awaited typed result to an async function that returns a non-generic result.
+    /// </summary>
+    /// <typeparam name="T">The input value type.</typeparam>
+    /// <param name="resultTask">The result task.</param>
+    /// <param name="action">The async function to bind.</param>
+    /// <returns>The action result on success, or the forwarded failure.</returns>
+    [DebuggerStepperBoundary]
+    public static async Task<Result> BindAsync<T>(this Task<Result<T>> resultTask, Func<T, Task<Result>> action)
+    {
+        var result = await resultTask.ConfigureAwait(false);
+
+        if (!result.IsSuccess)
+        {
+            return new Result(result._message, result._exception);
+        }
+
+        return await action(result.Value);
+    }
+
+    /// <summary>
     /// Binds an awaited result to an async function.
     /// </summary>
     /// <typeparam name="T">The input value type.</typeparam>
@@ -196,7 +332,7 @@ public static class BindExtension
 
         if (!result.IsSuccess)
         {
-            return Result.ForwardFail<TResult>(result);
+            return result.As<TResult>();
         }
 
         return await action(result.Value).ConfigureAwait(false);
@@ -244,6 +380,42 @@ public static class BindExtension
     }
 
     /// <summary>
+    /// Binds a typed result to an async function that returns a non-generic result.
+    /// </summary>
+    /// <typeparam name="T">The input value type.</typeparam>
+    /// <param name="result">The result.</param>
+    /// <param name="action">The async function to bind.</param>
+    /// <returns>The action result on success, or the original failure.</returns>
+    [DebuggerStepperBoundary]
+    public static async Task<Result> BindAsync<T>(this Result<T> result, Func<T, Task<Result>> action)
+    {
+        if (!result.IsSuccess)
+        {
+            return result.AsResult();
+        }
+
+        return await action(result.Value).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Binds a result to an async action that returns a typed result.
+    /// </summary>
+    /// <typeparam name="T">The value type.</typeparam>
+    /// <param name="result">The result.</param>
+    /// <param name="action">The async action to bind.</param>
+    /// <returns>The action result on success, or the original failure.</returns>
+    [DebuggerStepperBoundary]
+    public static async Task<Result<T>> BindAsync<T>(this Result result, Func<Task<Result<T>>> action)
+    {
+        if (!result.IsSuccess)
+        {
+            return result.As<T>();
+        }
+
+        return await action().ConfigureAwait(false);
+    }
+
+    /// <summary>
     /// Binds a result to an async function.
     /// </summary>
     /// <typeparam name="T">The input value type.</typeparam>
@@ -256,7 +428,7 @@ public static class BindExtension
     {
         if (!result.IsSuccess)
         {
-            return Result.ForwardFail<TResult>(result);
+            return result.As<TResult>();
         }
 
         return await action(result.Value).ConfigureAwait(false);

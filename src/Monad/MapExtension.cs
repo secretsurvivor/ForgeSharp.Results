@@ -20,12 +20,12 @@ public static class MapExtension
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Result<TResult> Map<TResult>(this Result result, Func<TResult> func)
     {
-        if (result.IsSuccess)
+        if (!result.IsSuccess)
         {
-            return Result.Ok(func());
+            return result.As<TResult>();
         }
 
-        return Result.ForwardFail<TResult>(result);
+        return Result.Ok(func());
     }
 
     /// <summary>
@@ -39,12 +39,12 @@ public static class MapExtension
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Result<TResult> Map<T, TResult>(this Result<T> result, Func<T, TResult> func)
     {
-        if (result.IsSuccess)
+        if (!result.IsSuccess)
         {
-            return Result.Ok(func(result.Value));
+            return result.As<TResult>();
         }
 
-        return Result.ForwardFail<TResult>(result);
+        return Result.Ok(func(result.Value));
     }
 
     /// <summary>
@@ -79,12 +79,12 @@ public static class MapExtension
     [DebuggerStepperBoundary]
     public static async Task<Result<TResult>> MapAsync<TResult>(this Result result, Func<Task<TResult>> func)
     {
-        if (result.IsSuccess)
+        if (!result.IsSuccess)
         {
-            return Result.Ok(await func().ConfigureAwait(false));
+            return result.As<TResult>();
         }
 
-        return Result.ForwardFail<TResult>(result);
+        return Result.Ok(await func().ConfigureAwait(false));
     }
 
     /// <summary>
@@ -98,12 +98,12 @@ public static class MapExtension
     [DebuggerStepperBoundary]
     public static async Task<Result<TResult>> MapAsync<T, TResult>(this Result<T> result, Func<T, Task<TResult>> func)
     {
-        if (result.IsSuccess)
+        if (!result.IsSuccess)
         {
-            return Result.Ok(await func(result.Value).ConfigureAwait(false));
+            return result.As<TResult>();
         }
 
-        return Result.ForwardFail<TResult>(result);
+        return Result.Ok(await func(result.Value).ConfigureAwait(false));
     }
 
     /// <summary>
@@ -149,12 +149,12 @@ public static class MapExtension
         {
             var result = await resultTask.ConfigureAwait(false);
 
-            if (result.IsSuccess)
+            if (!result.IsSuccess)
             {
-                return Result.Ok(func());
+                return result.As<TResult>();
             }
 
-            return Result.ForwardFail<TResult>(result);
+            return Result.Ok(func());
         }
     }
 
@@ -180,12 +180,12 @@ public static class MapExtension
         {
             var result = await resultTask.ConfigureAwait(false);
 
-            if (result.IsSuccess)
+            if (!result.IsSuccess)
             {
-                return Result.Ok(func(result.Value));
+                return result.As<TResult>();
             }
 
-            return Result.ForwardFail<TResult>(result);
+            return Result.Ok(func(result.Value));
         }
     }
 
@@ -235,12 +235,12 @@ public static class MapExtension
     {
         var result = await resultTask.ConfigureAwait(false);
 
-        if (result.IsSuccess)
+        if (!result.IsSuccess)
         {
-            return Result.Ok(await func());
+            return result.As<TResult>();
         }
 
-        return Result.ForwardFail<TResult>(result);
+        return Result.Ok(await func());
     }
 
     /// <summary>
@@ -256,12 +256,12 @@ public static class MapExtension
     {
         var result = await resultTask.ConfigureAwait(false);
 
-        if (result.IsSuccess)
+        if (!result.IsSuccess)
         {
-            return Result.Ok(await func(result.Value).ConfigureAwait(false));
+            return result.As<TResult>();
         }
 
-        return Result.ForwardFail<TResult>(result);
+        return Result.Ok(await func(result.Value).ConfigureAwait(false));
     }
 
     /// <summary>
@@ -299,12 +299,12 @@ public static class MapExtension
     [DebuggerStepperBoundary]
     public static async Task<Result<TResult>> MapAsync<TResult>(this Result result, Func<ValueTask<TResult>> func)
     {
-        if (result.IsSuccess)
+        if (!result.IsSuccess)
         {
-            return Result.Ok(await func().ConfigureAwait(false));
+            return result.As<TResult>();
         }
 
-        return Result.ForwardFail<TResult>(result);
+        return Result.Ok(await func().ConfigureAwait(false));
     }
 
     /// <summary>
@@ -318,12 +318,12 @@ public static class MapExtension
     [DebuggerStepperBoundary]
     public static async Task<Result<TResult>> MapAsync<T, TResult>(this Result<T> result, Func<T, ValueTask<TResult>> func)
     {
-        if (result.IsSuccess)
+        if (!result.IsSuccess)
         {
-            return Result.Ok(await func(result.Value).ConfigureAwait(false));
+            return result.As<TResult>();
         }
 
-        return Result.ForwardFail<TResult>(result);
+        return Result.Ok(await func(result.Value).ConfigureAwait(false));
     }
 
     /// <summary>
@@ -347,12 +347,12 @@ public static class MapExtension
         {
             var result = await resultTask.ConfigureAwait(false);
 
-            if (result.IsSuccess)
+            if (!result.IsSuccess)
             {
-                return Result.Ok(func());
+                return result.As<TResult>();
             }
 
-            return Result.ForwardFail<TResult>(result);
+            return Result.Ok(func());
         }
     }
 
@@ -378,12 +378,12 @@ public static class MapExtension
         {
             var result = await resultTask.ConfigureAwait(false);
 
-            if (result.IsSuccess)
+            if (!result.IsSuccess)
             {
-                return Result.Ok(func(result.Value));
+                return result.As<TResult>();
             }
 
-            return Result.ForwardFail<TResult>(result);
+            return Result.Ok(func(result.Value));
         }
     }
 
@@ -399,12 +399,12 @@ public static class MapExtension
     {
         var result = await resultTask.ConfigureAwait(false);
 
-        if (result.IsSuccess)
+        if (!result.IsSuccess)
         {
-            return Result.Ok(await func().ConfigureAwait(false));
+            return result.As<TResult>();
         }
 
-        return Result.ForwardFail<TResult>(result);
+        return Result.Ok(await func().ConfigureAwait(false));
     }
 
     /// <summary>
@@ -420,12 +420,12 @@ public static class MapExtension
     {
         var result = await resultTask.ConfigureAwait(false);
 
-        if (result.IsSuccess)
+        if (!result.IsSuccess)
         {
-            return Result.Ok(await func(result.Value).ConfigureAwait(false));
+            return result.As<TResult>();
         }
 
-        return Result.ForwardFail<TResult>(result);
+        return Result.Ok(await func(result.Value).ConfigureAwait(false));
     }
 
     /// <summary>
@@ -441,12 +441,12 @@ public static class MapExtension
     {
         var result = await resultTask.ConfigureAwait(false);
 
-        if (result.IsSuccess)
+        if (!result.IsSuccess)
         {
-            return Result.Ok(await func(result.Value).ConfigureAwait(false));
+            return result.As<TResult>();
         }
 
-        return Result.ForwardFail<TResult>(result);
+        return Result.Ok(await func(result.Value).ConfigureAwait(false));
     }
 
     /// <summary>
@@ -461,12 +461,12 @@ public static class MapExtension
     {
         var result = await resultTask.ConfigureAwait(false);
 
-        if (result.IsSuccess)
+        if (!result.IsSuccess)
         {
-            return Result.Ok(await func().ConfigureAwait(false));
+            return result.As<TResult>();
         }
 
-        return Result.ForwardFail<TResult>(result);
+        return Result.Ok(await func().ConfigureAwait(false));
     }
 
 #endif

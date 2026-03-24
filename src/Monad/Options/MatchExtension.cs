@@ -1,3 +1,4 @@
+using ForgeSharp.Results.Infrastructure;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
@@ -20,12 +21,12 @@ public static class OptionsMatchExtension
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Match<T, TResult>(this Options<T> option, Func<T, TResult> onSome, Func<TResult> onNone)
     {
-        if (option.HasValue)
+        if (!option.HasValue)
         {
-            return onSome(option.Value);
+            return onNone();
         }
 
-        return onNone();
+        return onSome(option.Value);
     }
 
     /// <summary>
@@ -38,10 +39,26 @@ public static class OptionsMatchExtension
     /// <param name="onNone">The function to invoke when no value is present.</param>
     /// <returns>The value produced by the matched branch.</returns>
     [DebuggerStepperBoundary, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static async Task<TResult> MatchAsync<T, TResult>(this Task<Options<T>> optionTask, Func<T, TResult> onSome, Func<TResult> onNone)
+    public static Task<TResult> MatchAsync<T, TResult>(this Task<Options<T>> optionTask, Func<T, TResult> onSome, Func<TResult> onNone)
     {
-        var option = await optionTask.ConfigureAwait(false);
-        return option.Match(onSome, onNone);
+        if (optionTask.TryGetResult(out var option))
+        {
+            return Task.FromResult(Match(option, onSome, onNone));
+        }
+
+        return Impl(optionTask, onSome, onNone);
+
+        static async Task<TResult> Impl(Task<Options<T>> optionTask, Func<T, TResult> onSome, Func<TResult> onNone)
+        {
+            var option = await optionTask.ConfigureAwait(false);
+
+            if (option.HasValue)
+            {
+                return onSome(option.Value);
+            }
+
+            return onNone();
+        }
     }
 
     /// <summary>
