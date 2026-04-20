@@ -4,6 +4,19 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+
+    <IsPackable>true</IsPackable>
+    <ProductName>ForgeSharp.Results.AspNetCore</ProductName>
+    <PackageId>ForgeSharp.Results.AspNetCore</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Connor McBrayne</Authors>
+    <Company>secretsurvivor</Company>
+    <Description>AspNetCore Integration for ForgeSharp.Results.</Description>
+    <RepositoryUrl>https://github.com/secretsurvivor/ForgeSharp.Results</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/secretsurvivor/ForgeSharp.Results</PackageProjectUrl>
+    <PackageTags>result;result-monad;monad;error-handling;functional;functional-programming;async;pipeline;safe;forgesharp</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>

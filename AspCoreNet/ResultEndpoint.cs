@@ -32,7 +32,12 @@ public sealed class ResultEndpoint : IResult
         }
 
         var factory = httpContext.RequestServices.GetRequiredService<IResultErrorMapperFactory>();
-        var problemDetailsService = httpContext.RequestServices.GetRequiredService<IProblemDetailsService>();
+        var problemDetailsService = httpContext.RequestServices.GetService<IProblemDetailsService>();
+
+        if (problemDetailsService is null)
+        {
+            throw new InvalidOperationException("ForgeSharp.Results.AspNetCore requires ProblemDetailsService. Use the AddProblemDetails on IServiceCollection to add it to the Service Provider.");
+        }
 
         if (result.IsValidationFault && factory.TryGetMapper<string>(out var validationMapper))
         {
@@ -113,7 +118,12 @@ public sealed class ResultEndpoint<T> : IResult
         }
 
         var factory = httpContext.RequestServices.GetRequiredService<IResultErrorMapperFactory>();
-        var problemDetailsService = httpContext.RequestServices.GetRequiredService<IProblemDetailsService>();
+        var problemDetailsService = httpContext.RequestServices.GetService<IProblemDetailsService>();
+
+        if (problemDetailsService is null)
+        {
+            throw new InvalidOperationException("ForgeSharp.Results.AspNetCore requires ProblemDetailsService. Use the AddProblemDetails on IServiceCollection to add it to the Service Provider.");
+        }
 
         if (result.IsValidationFault && factory.TryGetMapper<string>(out var validationMapper))
         {
@@ -196,7 +206,12 @@ public sealed class ResultEndpoint<T, TError> : IResult
         }
 
         var factory = httpContext.RequestServices.GetRequiredService<IResultErrorMapperFactory>();
-        var problemDetailsService = httpContext.RequestServices.GetRequiredService<IProblemDetailsService>();
+        var problemDetailsService = httpContext.RequestServices.GetService<IProblemDetailsService>();
+
+        if (problemDetailsService is null)
+        {
+            throw new InvalidOperationException("ForgeSharp.Results.AspNetCore requires ProblemDetailsService. Use the AddProblemDetails on IServiceCollection to add it to the Service Provider.");
+        }
 
         if (factory.TryGetMapper<TError>(out var error))
         {
