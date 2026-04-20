@@ -1,6 +1,9 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using ForgeSharp.Results.AspNetCore.Core;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Threading.Channels;
 
 namespace ForgeSharp.Results.AspNetCore.Configuration;
 
@@ -8,6 +11,10 @@ public interface IResultsAspNetCoreConfig
 {
     IResultsAspNetCoreConfig RegisterMapper<TMapper, TError>() where TMapper : IResultErrorMapper<TError>;
     IResultsAspNetCoreConfig RegisterMapperFromAssembly<TAssembly>();
+    IResultsAspNetCoreConfig RegisterPersister<TPersister>() where TPersister : IStatePersister;
+    IResultsAspNetCoreConfig RegisterPersisterFromAssembly<TAssembly>();
+
+    IResultsAspNetCoreConfig LongRunningRequestCapacity(int amount);
 }
 
 public static class AspNetCoreResultsExtension
@@ -31,11 +38,46 @@ public static class AspNetCoreResultsExtension
         }
     }
 
+    static IEnumerable<Type> FindPersisters(Assembly assembly)
+    {
+        foreach (var type in assembly.GetTypes())
+        {
+            if (type.GetInterfaces().Any(i => i == typeof(IStatePersister)))
+            {
+                if (type.IsAbstract || type.IsInterface)
+                {
+                    continue;
+                }
+
+                if (typeof(IStatePersister).IsAssignableFrom(type))
+                {
+                    yield return type;
+                }
+            }
+        }
+    }
+
     public static IServiceCollection AddResults(this IServiceCollection services, Action<IResultsAspNetCoreConfig> config)
     {
         var configImpl = new Config();
 
         config(configImpl);
+
+        if (configImpl._requestThrottleAmount is null)
+        {
+            services.AddSingleton(_ => Channel.CreateUnbounded<LongRunningRequest>());
+        }
+        else
+        {
+            var channelOption = new BoundedChannelOptions(configImpl._requestThrottleAmount.Value) { FullMode = BoundedChannelFullMode.Wait };
+            services.AddSingleton(_ => Channel.CreateBounded<LongRunningRequest>(channelOption));
+        }
+
+        services.AddSingleton(_ => Channel.CreateUnbounded<JobProgressUpdate>());
+        services.AddSingleton<LongRunningUtility>();
+        services.AddSingleton<LongRunningService>();
+        services.AddSingleton<IJobRegistry>(sp => sp.GetRequiredService<LongRunningService>());
+        services.AddHostedService(sp => sp.GetRequiredService<LongRunningService>());
 
         foreach (var (implementation, _) in configImpl._mappers)
         {
@@ -53,7 +95,17 @@ public static class AspNetCoreResultsExtension
             return factory;
         });
 
+        foreach (var persister in configImpl._persisters)
+        {
+            services.AddSingleton(typeof(IStatePersister), persister);
+        }
+
         return services;
+    }
+
+    public static IEndpointRouteBuilder AddResultEndpoints(this IEndpointRouteBuilder endpointRouteBuilder)
+    {
+        var group = endpointRouteBuilder.MapGroup("/__longrunning");
     }
 
     class MapperFactory : Dictionary<Type, Func<object>>, IResultErrorMapperFactory
@@ -97,6 +149,24 @@ public static class AspNetCoreResultsExtension
                 }
             }
 
+            return this;
+        }
+
+        public IResultsAspNetCoreConfig RegisterPersister<TPersister>() where TPersister : IStatePersister
+        {
+            _persisters.Add(typeof(TPersister));
+            return this;
+        }
+
+        public IResultsAspNetCoreConfig RegisterPersisterFromAssembly<TAssembly>()
+        {
+            _persisters.AddRange([.. FindPersisters(typeof(TAssembly).Assembly)]);
+            return this;
+        }
+
+        public IResultsAspNetCoreConfig LongRunningRequestCapacity(int amount)
+        {
+            _requestThrottleAmount = amount;
             return this;
         }
     }
