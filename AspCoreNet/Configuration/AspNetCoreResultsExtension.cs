@@ -37,15 +37,15 @@ public static class AspNetCoreResultsExtension
 
         config(configImpl);
 
-        foreach (var (implementation, _) in configImpl._mappers)
+        foreach (var (_, implementation) in configImpl._mappers)
         {
             services.AddSingleton(implementation);
         }
 
-        services.AddSingleton(x => {
+        services.AddSingleton<IResultErrorMapperFactory>(x => {
             var factory = new MapperFactory();
 
-            foreach (var (implementation, error) in configImpl._mappers)
+            foreach (var (error, implementation) in configImpl._mappers)
             {
                 factory.Add(error, () => x.GetRequiredService(implementation));
             }

@@ -104,14 +104,12 @@ public sealed class ResultEndpoint<T> : IResult
             httpContext.Response.ContentType = "application/json";
             httpContext.Response.StatusCode = StatusCodes.Status200OK;
 
-            // Wrap the value in a "data" envelope
-            var envelope = new { data = _result.Value };
-
             await JsonSerializer.SerializeAsync(
                 httpContext.Response.Body,
-                envelope,
-                envelope.GetType(),
+                _result.Value,
                 JsonSerializerOptions.Web);
+
+            return;
         }
 
         var factory = httpContext.RequestServices.GetRequiredService<IResultErrorMapperFactory>();
@@ -140,6 +138,8 @@ public sealed class ResultEndpoint<T> : IResult
                 ProblemDetails = problem,
                 Exception = result._exception,
             });
+
+            return;
         }
 
         httpContext.Response.StatusCode = result.IsException
@@ -187,14 +187,12 @@ public sealed class ResultEndpoint<T, TError> : IResult
             httpContext.Response.ContentType = "application/json";
             httpContext.Response.StatusCode = StatusCodes.Status200OK;
 
-            // Wrap the value in a "data" envelope
-            var envelope = new { data = _result.Value };
-
             await JsonSerializer.SerializeAsync(
                 httpContext.Response.Body,
-                envelope,
-                envelope.GetType(),
+                _result.Value,
                 JsonSerializerOptions.Web);
+
+            return;
         }
 
         var factory = httpContext.RequestServices.GetRequiredService<IResultErrorMapperFactory>();
@@ -210,6 +208,8 @@ public sealed class ResultEndpoint<T, TError> : IResult
                 HttpContext = httpContext,
                 ProblemDetails = problem,
             });
+
+            return;
         }
 
         httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
