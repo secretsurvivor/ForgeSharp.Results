@@ -1,12 +1,12 @@
 # AspNetCore Integration for ForgeSharp.Results
 
 This is a simple integration for ForgeSharp.Results at the moment with more to come.
-It provides the ResultEndpoint type to automatically serialise the Result type. Use in
-combination with Result<,> to provide rich error mapping.
+It provides the ResultEndpoint type to automatically serialise the Result type. Used in
+combination with Result<,> and it can provide rich error mapping.
 
 "Automatically" in this case requires result error mappers to map the error type into
 ProblemDetails using the `IResultErrorMapper<>` interface and injecting it with
-dependancy injection.
+dependency injection.
 
 ```csharp
 builder.Services.AddResults(config => {
@@ -15,7 +15,9 @@ builder.Services.AddResults(config => {
 
     // or inject individually manually
     config.RegisterMapper<DomainErrorMapper, DomainError>();
-    // Using both will cause errors
+    // Using both could cause an exception as they could
+    // attempt to register the same mappers if they reside
+    // in the same assembly
 });
 
 // Always inject the Problem Details Service
@@ -36,7 +38,7 @@ public async Task<ResultEndpoint<UserSaveResponse, DomainError>> CreateUser(User
 }
 ```
 
-Problem details _RFC 9457_ is a web standard with lots of material on the best practise
+Problem details _RFC 9457_ is a web standard with lots of material on the best practice
 to use it well. This is not a good example of how to fill the fields but just one to
 present the IResultErrorMapper
 
@@ -64,7 +66,7 @@ internal sealed class DomainErrorMapper : IResultErrorMapper<DomainError>
             };
         }
 
-        throw new InvalidDataException($"Invalid error type: {error.GetType().Name}");
+        throw new InvalidOperationException($"Invalid error type: {error.GetType().Name}");
     }
 }
 ```
