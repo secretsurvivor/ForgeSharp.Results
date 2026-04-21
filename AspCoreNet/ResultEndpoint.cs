@@ -135,6 +135,8 @@ public sealed class ResultEndpoint<T> : IResult
                 HttpContext = httpContext,
                 ProblemDetails = problem
             });
+
+            return;
         }
 
         if (result.IsException && factory.TryGetMapper<Exception>(out var exceptionMapper))
