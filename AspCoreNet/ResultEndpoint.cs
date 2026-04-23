@@ -111,7 +111,7 @@ public sealed class ResultEndpoint<T> : IResult
 
             await JsonSerializer.SerializeAsync(
                 httpContext.Response.Body,
-                _result.Value,
+                result.Value,
                 JsonSerializerOptions.Web);
 
             return;
@@ -196,12 +196,18 @@ public sealed class ResultEndpoint<T, TError> : IResult
 
         if (result.IsSuccess)
         {
+            if (result.Value is Unit)
+            {
+                httpContext.Response.StatusCode = StatusCodes.Status204NoContent;
+                return;
+            }
+
             httpContext.Response.ContentType = "application/json";
             httpContext.Response.StatusCode = StatusCodes.Status200OK;
 
             await JsonSerializer.SerializeAsync(
                 httpContext.Response.Body,
-                _result.Value,
+                result.Value,
                 JsonSerializerOptions.Web);
 
             return;
